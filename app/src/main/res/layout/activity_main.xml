@@ -11,25 +11,27 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.nigel.christiangame.MainActivity">
 
-    <ImageView
+    <Button
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/presence_invisible"
-        android:layout_marginBottom="29dp"
-        android:id="@+id/leftControllerImageView"
+        android:layout_marginBottom="45dp"
+        android:background="@color/play_game_button_color"
+        android:text="@string/play_game_button"
+        android:textColor="@color/play_game_button_text_color"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="30dp"
-        android:layout_marginStart="30dp" />
+        android:layout_centerHorizontal="true"
+        android:onClick="startGame"/>
 
-    <ImageView
+    <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/presence_invisible"
+        android:gravity="center_horizontal"
+        android:text="@string/title"
+        android:textColor="@color/title_color"
+        android:textSize="@dimen/title_size"
         android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/leftControllerImageView"
-        android:layout_alignStart="@+id/leftControllerImageView"
-        android:layout_marginTop="29dp"
-        android:id="@+id/rightControllerImageView" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="47dp" />
 </RelativeLayout>

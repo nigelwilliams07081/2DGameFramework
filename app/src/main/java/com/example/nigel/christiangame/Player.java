@@ -14,8 +14,17 @@ import android.graphics.Rect;
 public class Player implements GameObject {
 
     private Rect m_Collider;
+    private Point m_Position;
     private int m_Color;
     private int m_OldLeftValue;
+
+    private float m_XSpeed;
+    private float m_YSpeed;
+    public final float BOOST_AMOUNT = 2.0f;
+    public final float INITIAL_BOOST_TIME = 5.0f;
+    private float m_BoostTimeLimit;
+
+    private boolean m_IsBoosting;
 
     private Animation m_IdleAnimation;
     private Animation m_WalkRightAnimation;
@@ -26,7 +35,7 @@ public class Player implements GameObject {
 
     public Player(Rect collider) {
         m_Collider = collider;
-
+        m_BoostTimeLimit = INITIAL_BOOST_TIME;
         BitmapFactory bitmapFactory = new BitmapFactory();
         Bitmap idle = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue);
         Bitmap walk1 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk1);
@@ -74,6 +83,31 @@ public class Player implements GameObject {
         return m_Collider;
     }
 
+    public float GetBoostTimeLimit() { return m_BoostTimeLimit; }
+    public void SetBoostTimeLimit(float time) {
+        m_BoostTimeLimit = time;
+    }
+
+    public Point GetPosition() { return m_Position; }
+    public void SetPosition(Point position) { m_Position = position; }
+    public void SetPosition(int xPosition, int yPosition) {
+        m_Position.x = xPosition;
+        m_Position.y = yPosition;
+    }
+    public void SetXPosition(int x) { m_Position.x = x; }
+    public void SetYPosition(int y) { m_Position.y = y; }
+
+    public float GetXSpeed() { return m_XSpeed; }
+    public void SetXSpeed(float speed) { m_XSpeed = speed; }
+
+    public float GetYSpeed() { return m_YSpeed; }
+    public void SetYSpeed(float speed) { m_YSpeed = speed; }
+
+    public boolean GetIsBoosting() { return m_IsBoosting; }
+    public void SetIsBoosting(boolean isBoosting) {
+        m_IsBoosting = isBoosting;
+    }
+
     @Override
     public void Update() {
         m_AnimationManager.Update();
@@ -90,6 +124,16 @@ public class Player implements GameObject {
         }
         else if (m_Collider.left - m_OldLeftValue > 5) {
             m_AnimationState = 2;
+        }
+
+        if (m_IsBoosting) {
+            if (m_BoostTimeLimit > 0.0f) {
+                m_BoostTimeLimit -= 0.01f;
+            }
+            else {
+                m_IsBoosting = false;
+                m_BoostTimeLimit = INITIAL_BOOST_TIME;
+            }
         }
 
         m_AnimationManager.PlayAnimation(m_AnimationState);

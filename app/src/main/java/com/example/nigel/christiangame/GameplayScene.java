@@ -5,8 +5,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.provider.Settings;
 import android.view.MotionEvent;
+import android.widget.Button;
 
 /**
  * Created by Nigel on 9/28/2017.
@@ -17,8 +17,11 @@ public class GameplayScene implements Scene {
     private Rect m_SceneBounds = new Rect();
 
     private Player m_Player;
-    private Point m_PlayerPoint;
     private ObstacleManager m_ObstacleManager;
+
+    private DefaultButton m_BoostButton;
+    private DefaultButton m_TeleportButton;
+    private DefaultButton m_FireButton;
 
     private boolean m_PlayerIsMoving = false;
     private boolean m_IsGameOver = false;
@@ -30,25 +33,76 @@ public class GameplayScene implements Scene {
 
     private float m_Pitch;
     private float m_Roll;
-    private float m_Yaw;
-    private float m_XSpeed;
-    private float m_YSpeed;
+
 
     public GameplayScene() {
 
         m_Player = new Player(new Rect(100, 100, 200, 200));
-        m_PlayerPoint = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
-        m_Player.Update(m_PlayerPoint);
-        m_ObstacleManager = new ObstacleManager(200, 350, 75, Color.BLACK);
+        Point position = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
+        m_Player.SetPosition(position);
+        m_Player.Update(m_Player.GetPosition());
+        m_ObstacleManager = new ObstacleManager(200, 350, 75, Color.WHITE);
+
+        InitializeOrientationData();
+
+        PlaceButton(m_BoostButton, Color.rgb(22, 200, 22), Color.WHITE, "Boost", Constants.ScreenWidth / 4,
+                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, true);
+        PlaceButton(m_TeleportButton, Color.rgb(22, 22, 200), Color.WHITE, "Teleport", 2 * Constants.ScreenWidth / 4,
+                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, false);
+        PlaceButton(m_FireButton, Color.rgb(200, 22, 22), Color.WHITE, "Fire", 3 * Constants.ScreenWidth / 4,
+                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, false);
+//        PlaceBoostButton();
+//        PlaceTeleportButton();
+//        PlaceFireButton();
+
+        m_FrameTime = System.currentTimeMillis();
+
+    }
+
+    private void InitializeOrientationData() {
         m_OrientationData = new OrientationData();
         m_OrientationData.Register();
-        m_FrameTime = System.currentTimeMillis();
+    }
+
+//    private void PlaceBoostButton() {
+//        m_BoostButton = new DefaultButton(new Button(Constants.CurrentContext), Color.GREEN, Color.WHITE, "Boost",
+//                Constants.ScreenWidth / 4, Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
+//        m_BoostButton.SetTarget(m_Player);
+//        m_BoostButton.SetIsBoost(true);
+//
+//        Constants.RelativeLayout.addView(m_BoostButton.GetButton());
+//    }
+//
+//    private void PlaceTeleportButton() {
+//        m_TeleportButton = new DefaultButton(new Button(Constants.CurrentContext), Color.BLUE, Color.WHITE, "Teleport",
+//                2 * Constants.ScreenWidth / 4, Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
+//        m_TeleportButton.SetTarget(m_Player);
+//        m_TeleportButton.SetIsBoost(false);
+//
+//        Constants.RelativeLayout.addView(m_TeleportButton.GetButton());
+//    }
+//
+//    private void PlaceFireButton() {
+//        m_FireButton = new DefaultButton(new Button(Constants.CurrentContext), Color.rgb(200, 22, 22), Color.WHITE, "Shoot",
+//                3 * Constants.ScreenWidth / 4, Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
+//        m_FireButton.SetTarget(m_Player);
+//        m_FireButton.SetIsBoost(false);
+//
+//        Constants.RelativeLayout.addView(m_FireButton.GetButton());
+//    }
+
+    private void PlaceButton(DefaultButton button, int backgroundColor, int textColor, String text, float x, float y, boolean isBoost) {
+        button = new DefaultButton(new Button(Constants.CurrentContext), backgroundColor, textColor, text, x, y);
+        button.SetTarget(m_Player);
+        button.SetIsBoost(isBoost);
+
+        Constants.RelativeLayout.addView(button.GetButton());
     }
 
     public void ResetGame() {
 
-        m_PlayerPoint = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
-        m_Player.Update(m_PlayerPoint);
+        m_Player.SetPosition(new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4));
+        m_Player.Update(m_Player.GetPosition());
         m_ObstacleManager = new ObstacleManager(200, 350, 75, Color.BLACK);
         m_PlayerIsMoving = false;
     }
@@ -70,7 +124,7 @@ public class GameplayScene implements Scene {
             // if user is moving finger on screen
             case MotionEvent.ACTION_MOVE:
                 if (!m_IsGameOver && m_PlayerIsMoving) {
-                    m_PlayerPoint.set((int)motionEvent.getX(), (int)motionEvent.getY());
+                    m_Player.SetPosition((int)motionEvent.getX(), (int)motionEvent.getY());
                 }
                 break;
             // if the user's finger is lifted from the screen
@@ -92,45 +146,9 @@ public class GameplayScene implements Scene {
                 m_FrameTime = Constants.InitialTime;
             }
 
-            m_ElapsedTime = (int)(System.currentTimeMillis() - m_FrameTime);
-            m_FrameTime = System.currentTimeMillis();
-            if (m_OrientationData.GetOrientation() != null && m_OrientationData.GetStartOrientation() != null) {
-                m_Pitch = m_OrientationData.GetOrientation()[1] - m_OrientationData.GetStartOrientation()[1];
-                m_Roll = m_OrientationData.GetOrientation()[2] - m_OrientationData.GetStartOrientation()[2];
-                m_XSpeed = 2 * m_Roll * Constants.ScreenWidth / 1000.0f;
-                m_YSpeed = -m_Pitch * Constants.ScreenHeight / 1000.0f;
+            MovePlayerByTilting();
 
-                if (Math.abs(m_XSpeed * m_ElapsedTime) > 5.0) {
-                    m_PlayerPoint.x += (int)(m_XSpeed * m_ElapsedTime);
-                }
-                else {
-                    m_PlayerPoint.x += 0;
-                }
-
-                if (Math.abs(m_YSpeed * m_ElapsedTime) > 5.0) {
-                    m_PlayerPoint.y += (int)(m_YSpeed * m_ElapsedTime);
-                }
-                else {
-                    m_PlayerPoint.y += 0;
-                }
-
-            }
-
-            if (m_PlayerPoint.x < 0) {
-                m_PlayerPoint.x = 0;
-            }
-            else if (m_PlayerPoint.x > Constants.ScreenWidth) {
-                m_PlayerPoint.x = Constants.ScreenWidth;
-            }
-
-            if (m_PlayerPoint.y < 0) {
-                m_PlayerPoint.y = 0;
-            }
-            else if (m_PlayerPoint.y > Constants.ScreenHeight) {
-                m_PlayerPoint.y = Constants.ScreenHeight;
-            }
-
-            m_Player.Update(m_PlayerPoint);
+            m_Player.Update(m_Player.GetPosition());
             m_ObstacleManager.Update();
 
             if (m_ObstacleManager.IsCollidingWith(m_Player)) {
@@ -142,7 +160,7 @@ public class GameplayScene implements Scene {
 
     @Override
     public void Draw(Canvas canvas) {
-        canvas.drawColor(Color.WHITE);
+//        canvas.drawColor(Color.BLACK);
 
         m_Player.Draw(canvas);
         m_ObstacleManager.Draw(canvas);
@@ -153,6 +171,58 @@ public class GameplayScene implements Scene {
             paint.setTextSize(Constants.GAME_OVER_TEXT_SIZE);
             paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
             DrawCenteredText(canvas, paint, "Game Over");
+        }
+    }
+
+    private void MovePlayerByTilting() {
+
+        m_ElapsedTime = (int)(System.currentTimeMillis() - m_FrameTime);
+        m_FrameTime = System.currentTimeMillis();
+
+        if (m_OrientationData.GetOrientation() != null && m_OrientationData.GetStartOrientation() != null) {
+            MovePlayer();
+        }
+
+        if (m_Player.GetPosition().x < 0) {
+            m_Player.SetXPosition(0);
+        }
+        else if (m_Player.GetPosition().x > Constants.ScreenWidth) {
+            m_Player.SetXPosition(Constants.ScreenWidth);
+        }
+
+        if (m_Player.GetPosition().y < 0) {
+            m_Player.SetYPosition(0);
+        }
+        else if (m_Player.GetPosition().y > Constants.ScreenHeight) {
+            m_Player.SetYPosition(Constants.ScreenHeight);
+        }
+    }
+
+    private void MovePlayer() {
+        m_Pitch = m_OrientationData.GetOrientation()[1] - m_OrientationData.GetStartOrientation()[1];
+        m_Roll = m_OrientationData.GetOrientation()[2] - m_OrientationData.GetStartOrientation()[2];
+
+        if (m_Player.GetIsBoosting()) {
+            m_Player.SetXSpeed(m_Player.BOOST_AMOUNT * 2 * m_Roll * Constants.ScreenWidth / 1000.0f);
+            m_Player.SetYSpeed(m_Player.BOOST_AMOUNT * -m_Pitch * Constants.ScreenHeight / 1000.0f);
+        }
+        else {
+            m_Player.SetXSpeed(2 * m_Roll * Constants.ScreenWidth / 1000.0f);
+            m_Player.SetYSpeed(-m_Pitch * Constants.ScreenHeight / 1000.0f);
+        }
+
+        if (Math.abs(m_Player.GetXSpeed() * m_ElapsedTime) > 5.0) {
+            m_Player.SetXPosition(m_Player.GetPosition().x + (int)(m_Player.GetXSpeed() * m_ElapsedTime));
+        }
+        else {
+            m_Player.SetXPosition(m_Player.GetPosition().x);
+        }
+
+        if (Math.abs(m_Player.GetYSpeed() * m_ElapsedTime) > 5.0) {
+            m_Player.SetYPosition(m_Player.GetPosition().y + (int)(m_Player.GetYSpeed() * m_ElapsedTime));
+        }
+        else {
+            m_Player.SetYPosition(m_Player.GetPosition().y);
         }
     }
 
