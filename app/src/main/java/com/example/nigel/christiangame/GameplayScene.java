@@ -19,9 +19,9 @@ public class GameplayScene implements Scene {
     private Player m_Player;
     private ObstacleManager m_ObstacleManager;
 
-    private DefaultButton m_BoostButton;
-    private DefaultButton m_TeleportButton;
-    private DefaultButton m_FireButton;
+    private ActionButton m_BoostButton;
+    private ActionButton m_TeleportButton;
+    private ActionButton m_FireButton;
 
     private boolean m_PlayerIsMoving = false;
     private boolean m_IsGameOver = false;
@@ -41,8 +41,8 @@ public class GameplayScene implements Scene {
         Point position = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
         m_Player.SetPosition(position);
         m_Player.Update(m_Player.GetPosition());
-        m_ObstacleManager = new ObstacleManager(200, 350, 75, Color.WHITE);
-
+        m_ObstacleManager = new ObstacleManager(50, 50, Color.WHITE);
+        m_ObstacleManager.SetTarget(m_Player);
         InitializeOrientationData();
 
         PlaceButton(m_BoostButton, Color.rgb(22, 200, 22), Color.WHITE, "Boost", Constants.ScreenWidth / 4,
@@ -51,9 +51,6 @@ public class GameplayScene implements Scene {
                 Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, false);
         PlaceButton(m_FireButton, Color.rgb(200, 22, 22), Color.WHITE, "Fire", 3 * Constants.ScreenWidth / 4,
                 Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, false);
-//        PlaceBoostButton();
-//        PlaceTeleportButton();
-//        PlaceFireButton();
 
         m_FrameTime = System.currentTimeMillis();
 
@@ -64,35 +61,9 @@ public class GameplayScene implements Scene {
         m_OrientationData.Register();
     }
 
-//    private void PlaceBoostButton() {
-//        m_BoostButton = new DefaultButton(new Button(Constants.CurrentContext), Color.GREEN, Color.WHITE, "Boost",
-//                Constants.ScreenWidth / 4, Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
-//        m_BoostButton.SetTarget(m_Player);
-//        m_BoostButton.SetIsBoost(true);
-//
-//        Constants.RelativeLayout.addView(m_BoostButton.GetButton());
-//    }
-//
-//    private void PlaceTeleportButton() {
-//        m_TeleportButton = new DefaultButton(new Button(Constants.CurrentContext), Color.BLUE, Color.WHITE, "Teleport",
-//                2 * Constants.ScreenWidth / 4, Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
-//        m_TeleportButton.SetTarget(m_Player);
-//        m_TeleportButton.SetIsBoost(false);
-//
-//        Constants.RelativeLayout.addView(m_TeleportButton.GetButton());
-//    }
-//
-//    private void PlaceFireButton() {
-//        m_FireButton = new DefaultButton(new Button(Constants.CurrentContext), Color.rgb(200, 22, 22), Color.WHITE, "Shoot",
-//                3 * Constants.ScreenWidth / 4, Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
-//        m_FireButton.SetTarget(m_Player);
-//        m_FireButton.SetIsBoost(false);
-//
-//        Constants.RelativeLayout.addView(m_FireButton.GetButton());
-//    }
 
-    private void PlaceButton(DefaultButton button, int backgroundColor, int textColor, String text, float x, float y, boolean isBoost) {
-        button = new DefaultButton(new Button(Constants.CurrentContext), backgroundColor, textColor, text, x, y);
+    private void PlaceButton(ActionButton button, int backgroundColor, int textColor, String text, float x, float y, boolean isBoost) {
+        button = new ActionButton(new Button(Constants.CurrentContext), backgroundColor, textColor, text, x, y);
         button.SetTarget(m_Player);
         button.SetIsBoost(isBoost);
 
@@ -103,24 +74,29 @@ public class GameplayScene implements Scene {
 
         m_Player.SetPosition(new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4));
         m_Player.Update(m_Player.GetPosition());
-        m_ObstacleManager = new ObstacleManager(200, 350, 75, Color.BLACK);
+        m_ObstacleManager = new ObstacleManager(50, 50, Color.WHITE);
+        m_ObstacleManager.SetTarget(m_Player);
         m_PlayerIsMoving = false;
     }
 
     @Override
     public void ReceiveTouch(MotionEvent motionEvent) {
         switch (motionEvent.getAction()) {
-            // if the user is holding finger on screen
+
+            // If the user is holding finger on screen
             case MotionEvent.ACTION_DOWN:
                 if (!m_IsGameOver && m_Player.GetCollider().contains((int)motionEvent.getX(), (int)motionEvent.getY())) {
                     m_PlayerIsMoving = true;
                 }
+                // If the game is over and it has been 2 seconds or more, make the game restart
                 if (m_IsGameOver && System.currentTimeMillis() - m_GameOverTime >= 2000) {
                     ResetGame();
                     m_IsGameOver = false;
+                    // Reset the orientation data for a new game
                     m_OrientationData.NewGame();
                 }
                 break;
+
             // if user is moving finger on screen
             case MotionEvent.ACTION_MOVE:
                 if (!m_IsGameOver && m_PlayerIsMoving) {
@@ -134,6 +110,7 @@ public class GameplayScene implements Scene {
         }
     }
 
+    // Don't worry about this for now
     @Override
     public void SwitchScene() {
         SceneManager.ACTIVE_SCENE = 0;
@@ -151,9 +128,12 @@ public class GameplayScene implements Scene {
             m_Player.Update(m_Player.GetPosition());
             m_ObstacleManager.Update();
 
-            if (m_ObstacleManager.IsCollidingWith(m_Player)) {
+            // Checks to see if any obstacle in the ObstacleManager is touching the player
+            if (m_ObstacleManager.GetIsCollidingWithPlayer()) {
                 m_IsGameOver = true;
-                m_GameOverTime = System.currentTimeMillis();
+                m_GameOverTime = Constants.CurrentGameTime;
+
+                // TODO: Reduce the number of player lives and replace the player at a random position
             }
         }
     }
@@ -205,6 +185,7 @@ public class GameplayScene implements Scene {
         if (m_Player.GetIsBoosting()) {
             m_Player.SetXSpeed(m_Player.BOOST_AMOUNT * 2 * m_Roll * Constants.ScreenWidth / 1000.0f);
             m_Player.SetYSpeed(m_Player.BOOST_AMOUNT * -m_Pitch * Constants.ScreenHeight / 1000.0f);
+
         }
         else {
             m_Player.SetXSpeed(2 * m_Roll * Constants.ScreenWidth / 1000.0f);
@@ -213,6 +194,7 @@ public class GameplayScene implements Scene {
 
         if (Math.abs(m_Player.GetXSpeed() * m_ElapsedTime) > 5.0) {
             m_Player.SetXPosition(m_Player.GetPosition().x + (int)(m_Player.GetXSpeed() * m_ElapsedTime));
+            m_Player.RotatePlayer((int)m_Player.GetRotation());
         }
         else {
             m_Player.SetXPosition(m_Player.GetPosition().x);

@@ -9,14 +9,23 @@ import android.widget.Toast;
  * Created by Nigel on 10/14/2017.
  */
 
-public class DefaultButton {
+public class ActionButton {
 
     private Button m_Button;
     private int m_DefaultColor;
     private boolean m_IsBoostButton;
     private Player m_TargetPlayer;
 
-    public DefaultButton(Button button, int background, int textColor, String text, float xPosition, float yPosition) {
+    /**
+     * Creates an ActionButton used for different events such as shooting, boosting, or teleporting
+     * @param button The Button attribute
+     * @param background The background color of the Button
+     * @param textColor The text color of the Button
+     * @param text The text of the button
+     * @param xPosition The X-Position of the Button
+     * @param yPosition The Y-Position of the Button
+     */
+    public ActionButton(Button button, int background, int textColor, String text, float xPosition, float yPosition) {
         m_Button = button;
         m_DefaultColor = background;
         m_Button.setBackgroundColor(background);
@@ -27,15 +36,18 @@ public class DefaultButton {
         m_Button.setOnClickListener(new ButtonClickListener());
     }
 
+    /**
+     * Returns the ActionButton's Button
+     * @return Button
+     */
     public Button GetButton() {
         return m_Button;
     }
 
     /**
-     * If m_IsBoostButton is false, then it is a teleport button
-     * */
-    public boolean GetIsBoost() { return m_IsBoostButton; }
-
+     * Sets the target of this button
+     * @param player The Spaceship
+     */
     public void SetTarget(Player player) {
         m_TargetPlayer = player;
     }
@@ -69,6 +81,8 @@ public class DefaultButton {
             else {
                 Toast.makeText(Constants.CurrentContext, "Cooling down", Toast.LENGTH_SHORT).show();
             }
+
+
         }
     }
 }

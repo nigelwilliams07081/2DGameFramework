@@ -1,6 +1,7 @@
 package com.example.nigel.christiangame;
 
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 
 /**
@@ -30,6 +31,14 @@ public class AnimationManager {
             }
             m_AnimationIndex = index;
         }
+    }
+
+    public int GetAnimationIndex() {
+        return m_AnimationIndex;
+    }
+
+    public Animation[] GetAnimations() {
+        return m_Animations;
     }
 
     public void Update() {

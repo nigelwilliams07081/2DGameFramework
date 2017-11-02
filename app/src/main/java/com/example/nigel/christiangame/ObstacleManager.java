@@ -14,30 +14,59 @@ public class ObstacleManager {
 
     private ArrayList<Obstacle> m_Obstacles;
 
-    private float m_Speed;
-    private float m_ElapsedTime;
-    private int m_StartingXPosition;
-
-    private int m_Gap;
-    private int m_ObstacleGap;
     private int m_ObstacleHeight;
+    private int m_ObstacleWidth;
     private int m_Color;
     private long m_StartTime;
-    private long m_InitialTime;
     private int m_Score = 0;
 
-    public ObstacleManager(int gap, int obstacleGap, int obstacleHeight, int color) {
-        m_Gap = gap;
-        m_ObstacleGap = obstacleGap;
+    private int m_XStart;
+    private int m_YStart;
+    private boolean m_IsCollidingWithPlayer;
+    private Player m_Player;
+
+    /**
+     * Holds a list of obstacles of size @obstacleWidth @obstacleHeight and color @color
+     * @param obstacleWidth The width of all obstacles
+     * @param obstacleHeight The height of all obstacles
+     * @param color The color of  all obstacles
+     */
+    public ObstacleManager(int obstacleWidth, int obstacleHeight, int color) {
+        m_ObstacleWidth = obstacleWidth;
         m_ObstacleHeight = obstacleHeight;
         m_Color = color;
-        m_StartTime = System.currentTimeMillis();
-        m_InitialTime = m_StartTime;
+        m_StartTime = Constants.CurrentGameTime;
 
         m_Obstacles = new ArrayList<>();
 
         PopulateObstacles();
     }
+
+    /**
+     * Returns the list of Obstacles
+     * @return Returns an ArrayList of Obstacles
+     */
+    public ArrayList<Obstacle> GetObstacles() {
+        return m_Obstacles;
+    }
+
+    public int GetScore() {
+        return m_Score;
+    }
+
+    public void SetScore(int score) {
+        m_Score = score;
+    }
+
+    public void SetTarget(Player player) {
+        m_Player = player;
+    }
+
+    /**
+     * Returns true if any Obstacle has collided with the Player
+     * @return boolean
+     */
+    public boolean GetIsCollidingWithPlayer() { return m_IsCollidingWithPlayer; }
 
     public boolean IsCollidingWith(Player player) {
         for (Obstacle obstacle : m_Obstacles) {
@@ -48,37 +77,58 @@ public class ObstacleManager {
         return false;
     }
 
+    /**
+     * Removes an obstacle form the ObstacleManager if it hits any of the bounds, and creates a new obstacle at a random position
+     * @param leftX @description The left bound value
+     * @param rightX @description The right bound value
+     * @param upY @description The top bound value
+     * @param downY @description The bottom bound value
+     */
+    private void CheckIfOutOfBounds(int leftX, int rightX, int upY, int downY) {
+        for (Obstacle obstacle : m_Obstacles) {
+            if (obstacle.IsOutOfBounds(leftX, rightX, upY, downY)) {
+                int xStart = (int)(Math.random() * Constants.ScreenWidth);
+                int yStart = 50;
+//                int yStart = 100;
+
+                m_Obstacles.add(0, new Obstacle(xStart, yStart, xStart + m_ObstacleWidth, yStart + m_ObstacleHeight, 50, 50,  m_Color));
+                m_Obstacles.remove(obstacle);
+
+                m_Score = m_Score + 1;
+            }
+        }
+    }
+
+    /**
+     * Populates the initial list of obstacles
+     */
     private void PopulateObstacles() {
-        int currentY = -5 * Constants.ScreenHeight / 4;
-//        m_Obstacles.add(new Obstacle(m_ObstacleHeight, 0, 0, m_PlayerGap, m_Color));
-        while (currentY < 0) {
-            int xStart = (int)(Math.random() * (Constants.ScreenWidth - m_Gap));
-            m_Obstacles.add(new Obstacle(m_ObstacleHeight, xStart, currentY, m_Gap, m_Color));
-            currentY += m_ObstacleHeight + m_ObstacleGap;
+        System.out.println("Trying to populate obstacles");
+        for (int i = 0; i < 7; i++) {
+            int xStart = (int)(Math.random() * Constants.ScreenWidth);
+//            int yStart = (int)(Math.random() * Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
+            int yStart = 50;
+
+            m_Obstacles.add(new Obstacle(xStart, yStart, xStart + 50, yStart + 50, 50, 50, m_Color));
         }
     }
 
     public void Update() {
         // Restarts m_StartTime when you reenter the app
-        if (m_StartTime < Constants.InitialTime) {
-            m_StartTime = Constants.InitialTime;
-        }
-        m_ElapsedTime = (int)(System.currentTimeMillis() - m_StartTime);
-        m_StartTime = System.currentTimeMillis();
-        m_Speed = Constants.ScreenHeight / 10000.0f;
 
         for (Obstacle obstacle : m_Obstacles) {
             // Moves each obstacle down the screen
-            obstacle.Move(m_Speed * m_ElapsedTime);
-        }
-
-        // If the last obstacle is off screen, add a new obstacle at the top of the screen with a random gap size
-        if (m_Obstacles.get(m_Obstacles.size() - 1).GetCollider1().top >= Constants.ScreenHeight) {
-            m_StartingXPosition = (int)(Math.random() * (Constants.ScreenWidth - m_Gap));
-            m_Obstacles.add(0, new Obstacle(m_ObstacleHeight, m_StartingXPosition, m_Obstacles.get(0).GetCollider1().top - m_ObstacleHeight - m_ObstacleGap, m_Gap, m_Color));
-            m_Obstacles.remove(m_Obstacles.size() - 1);
-
-            m_Score = m_Score + 1;
+            obstacle.Move(0.0f, obstacle.GetSpeed());
+            if (obstacle.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
+                m_XStart = (int)(Math.random() * Constants.ScreenWidth);
+                m_YStart = 50;
+//                obstacle.GetCollider().setEmpty();
+                m_Obstacles.remove(obstacle);
+                m_Obstacles.add(0, new Obstacle(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight(), 50, 50, obstacle.GetColor()));
+            }
+            if (obstacle.IsCollidingWith(m_Player)) {
+                m_IsCollidingWithPlayer = true;
+            }
         }
     }
 

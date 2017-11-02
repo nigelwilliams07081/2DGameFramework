@@ -2,9 +2,9 @@ package com.example.nigel.christiangame;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.provider.Settings;
 
 /**
  * Created by Nigel on 9/28/2017.
@@ -12,11 +12,12 @@ import android.provider.Settings;
 
 public class Animation {
 
-    private Bitmap[] m_Frames;
-    private int m_FrameIndex;
+    private Bitmap[] m_Images;
+    private int m_ImageIndex;
     private boolean m_IsPlaying = false;
     private float m_FrameTime;
-    private long m_LastFrame;
+    private long m_LastImage;
+    private Matrix m_Matrix;
 
     public boolean IsPlaying() {
         return m_IsPlaying;
@@ -24,12 +25,12 @@ public class Animation {
 
     public void Play() {
         m_IsPlaying = true;
-        m_FrameIndex = 0;
-        SetLastFrame(System.currentTimeMillis());
+        m_ImageIndex = 0;
+        SetLastImage(System.currentTimeMillis());
     }
 
-    private void SetLastFrame(long frame) {
-        m_LastFrame = frame;
+    private void SetLastImage(long frame) {
+        m_LastImage = frame;
     }
 
     public void Stop() {
@@ -37,21 +38,28 @@ public class Animation {
     }
 
     public Animation(Bitmap[] frames, float animationTime) {
-        m_Frames = frames;
-        m_FrameIndex = 0;
+        m_Images = frames;
+        m_ImageIndex = 0;
         m_FrameTime = animationTime / frames.length;
-        SetLastFrame(System.currentTimeMillis());
+        SetLastImage(System.currentTimeMillis());
+    }
+
+    /***
+     * Sets Matrix for rotating the image
+     * @param matrix
+     */
+    public void SetMatrix(Matrix matrix) {
+        m_Matrix = matrix;
     }
 
     public void Update() {
-
         if (!m_IsPlaying)
             return;
 
-        if (System.currentTimeMillis() - m_LastFrame > m_FrameTime * 1000) {
-            m_FrameIndex++;
-            m_FrameIndex = m_FrameIndex >= m_Frames.length ? 0 : m_FrameIndex;
-            SetLastFrame(System.currentTimeMillis());
+        if (System.currentTimeMillis() - m_LastImage > m_FrameTime * 1000) {
+            m_ImageIndex++;
+            m_ImageIndex = m_ImageIndex >= m_Images.length ? 0 : m_ImageIndex;
+            SetLastImage(System.currentTimeMillis());
         }
     }
 
@@ -60,11 +68,12 @@ public class Animation {
             return;
 
 //        ScaleRectangle(destination);
-        canvas.drawBitmap(m_Frames[m_FrameIndex], null, destination, new Paint());
+        canvas.drawBitmap(m_Images[m_ImageIndex], null, destination, new Paint());
+//        canvas.drawBitmap(m_Images[m_ImageIndex], m_Matrix, new Paint());
     }
 
     private void ScaleRectangle(Rect rectangle) {
-        float widthHeightRatio = (float)(m_Frames[m_FrameIndex].getWidth()) / m_Frames[m_FrameIndex].getHeight();
+        float widthHeightRatio = (float)(m_Images[m_ImageIndex].getWidth()) / m_Images[m_ImageIndex].getHeight();
         if (rectangle.width() > rectangle.height()) {
             rectangle.left = rectangle.right - (int)(rectangle.height() * widthHeightRatio);
         }

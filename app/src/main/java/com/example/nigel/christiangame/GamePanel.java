@@ -69,6 +69,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void Update() {
         m_SceneManager.Update();
+        Constants.CurrentGameTime = System.currentTimeMillis();
     }
 
     @Override

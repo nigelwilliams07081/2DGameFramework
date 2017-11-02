@@ -14,13 +14,26 @@ import android.widget.RelativeLayout;
 
 public class Constants {
     public static int ScreenWidth;
+    /**
+     * 50
+     */
     public static final int SCREEN_WIDTH_PADDING = 50;
     public static int ScreenHeight;
+    /**
+     * 120
+     */
     public static final int SCREEN_HEIGHT_PADDING = 120;
+    /**
+     * BLUE
+     */
     public static final int GAME_OVER_TEXT_COLOR = Color.BLUE;
+    /**
+     * 100
+     */
     public static final int GAME_OVER_TEXT_SIZE = 100;
     public static Context CurrentContext;
     public static long InitialTime;
+    public static long CurrentGameTime;
 
     public static final RelativeLayout.LayoutParams LAYOUT_PARAMS_WC = new RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
