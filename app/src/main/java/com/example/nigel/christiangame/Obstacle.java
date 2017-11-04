@@ -13,26 +13,43 @@ import android.webkit.ConsoleMessage;
 
 public class Obstacle implements GameObject {
 
+    private final float OBSTACLE_SPEED = 10.0f;
+
     private Rect m_Collider;
     private int m_Color;
-    private float m_Speed;
-
-    private long m_StartTime;
-    private float m_ElapsedTime;
+    private float m_HorizontalSpeed;
+    private float m_VerticalSpeed;
     private int m_Width;
     private int m_Height;
 
     private boolean m_IsActive;
-
-    private Point m_Position;
+    private Paint m_Paint;
 
     public Obstacle(int left, int top, int right, int bottom, int width, int height, int color) {
         m_Collider = new Rect(left, top, right, bottom);
         m_Width = width;
         m_Height = height;
         m_Color = color;
-        m_Speed = (float)Math.random() * 7.0f + 1.0f;
         m_IsActive = true;
+        m_Paint = new Paint();
+        m_Paint.setColor(m_Color);
+        SetSpeed(left, top);
+    }
+
+    private void SetSpeed(int left, int top) {
+        if ((float)left < Constants.ScreenWidth / 2.0f) {
+            m_HorizontalSpeed = (float)Math.random() * OBSTACLE_SPEED + 1.0f;
+        }
+        else {
+            m_HorizontalSpeed = (float)Math.random() * -OBSTACLE_SPEED - 1.0f;
+        }
+
+        if ((float)top < Constants.ScreenHeight / 2.0f) {
+            m_VerticalSpeed = (float)Math.random() * OBSTACLE_SPEED + 1.0f;
+        }
+        else {
+            m_VerticalSpeed = (float)Math.random() * -OBSTACLE_SPEED - 1.0f;
+        }
     }
 
     /**
@@ -63,16 +80,28 @@ public class Obstacle implements GameObject {
     public int GetColor() { return m_Color; }
 
     /**
-     * Returns the Obstacle's Speed
+     * Returns the Obstacle's Horizontal Speed
      * @return float
      */
-    public float GetSpeed() { return m_Speed; }
+    public float GetHorizontalSpeed() { return m_HorizontalSpeed; }
+
+    /**123hyb n46+/
+     * Sets the Obstacle's Horizontal Speed
+     * @param speed The horizontal speed the obstacle will be set to
+     */
+    public void SetHorizontalSpeed(float speed) { m_HorizontalSpeed = speed; }
 
     /**
-     * Sets the Obstacle's Speed
-     * @param speed The speed the obstacle will be set to
+     * Returns the Obstacle's Vertical Speed
+     * @return float
      */
-    public void SetSpeed(float speed) { m_Speed = speed; }
+    public float GetVerticalSpeed() { return m_VerticalSpeed; }
+
+    /**
+     * Sets the Obstacle's Vertical Speed
+     * @param speed The vertical speed the obstacle will be set to
+     */
+    public void SetVerticalSpeed(float speed) { m_VerticalSpeed = speed; }
 
     /**
      * Returns the Width of the Collider
@@ -104,7 +133,7 @@ public class Obstacle implements GameObject {
      * @return boolean
      */
     public boolean IsOutOfBounds(int leftX, int rightX, int upY, int downY) {
-        return m_Collider.bottom > downY;
+        return m_Collider.left < leftX || m_Collider.right > rightX || m_Collider.top < upY || m_Collider.bottom > downY;
     }
 
     /**
@@ -119,17 +148,6 @@ public class Obstacle implements GameObject {
         m_Collider.bottom += yAmount;
     }
 
-    /**
-     * Sets the X,Y Position of the Obstacle
-     * @param xPosition
-     * @param yPosition
-     */
-    public void SetPosition(int xPosition, int yPosition) {
-        m_Position.x = xPosition;
-        m_Position.y = yPosition;
-
-    }
-
     @Override
     public void Update() {
 
@@ -137,8 +155,6 @@ public class Obstacle implements GameObject {
 
     @Override
     public void Draw(Canvas canvas) {
-        Paint paint = new Paint();
-        paint.setColor(m_Color);
-        canvas.drawRect(m_Collider, paint);
+        canvas.drawRect(m_Collider, m_Paint);
     }
 }

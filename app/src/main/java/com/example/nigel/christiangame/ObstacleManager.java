@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by Nigel on 9/23/2017.
@@ -24,6 +25,12 @@ public class ObstacleManager {
     private int m_YStart;
     private boolean m_IsCollidingWithPlayer;
     private Player m_Player;
+    private Paint m_Paint;
+    private Random m_Random;
+    private boolean m_IsAtTop;
+    private boolean m_IsAtBottom;
+    private boolean m_IsAtLeft;
+    private boolean m_IsAtRight;
 
     /**
      * Holds a list of obstacles of size @obstacleWidth @obstacleHeight and color @color
@@ -39,7 +46,13 @@ public class ObstacleManager {
 
         m_Obstacles = new ArrayList<>();
 
+        m_Paint = new Paint();
+        m_Paint.setTextSize(Constants.GAME_OVER_TEXT_SIZE);
+        m_Paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
+
+        m_Random = new Random();
         PopulateObstacles();
+
     }
 
     /**
@@ -105,28 +118,71 @@ public class ObstacleManager {
     private void PopulateObstacles() {
         System.out.println("Trying to populate obstacles");
         for (int i = 0; i < 7; i++) {
-            int xStart = (int)(Math.random() * Constants.ScreenWidth);
-//            int yStart = (int)(Math.random() * Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
-            int yStart = 50;
+            ResetObstaclePosition();
+            m_Obstacles.add(new Obstacle(m_XStart, m_YStart, m_XStart + 50, m_YStart + 50, 50, 50, m_Color));
+        }
+    }
 
-            m_Obstacles.add(new Obstacle(xStart, yStart, xStart + 50, yStart + 50, 50, 50, m_Color));
+    /**
+     * Resets the position of the Obstacle to be at a very random position
+     */
+    private void ResetObstaclePosition() {
+        if (m_Random.nextBoolean()) {
+            m_IsAtTop = true;
+            m_IsAtLeft = true;
+            m_IsAtBottom = false;
+            m_IsAtRight = false;
+        }
+        else {
+            m_IsAtTop = false;
+            m_IsAtLeft = false;
+            m_IsAtBottom = true;
+            m_IsAtRight = true;
+        }
+
+        if (m_IsAtTop) {
+            m_XStart = (int)(Math.random() * Constants.ScreenWidth);
+            m_YStart = 0;
+        }
+        else if (m_IsAtBottom) {
+            m_XStart = (int)(Math.random() * Constants.ScreenWidth);
+            m_YStart = Constants.ScreenHeight;
+        }
+        if (m_IsAtLeft) {
+            m_XStart = 0;
+            m_YStart = (int)(Math.random() * Constants.ScreenHeight);
+        }
+        else if (m_IsAtRight) {
+            m_XStart = Constants.ScreenWidth;
+            m_YStart = (int)(Math.random() * Constants.ScreenHeight);
         }
     }
 
     public void Update() {
         // Restarts m_StartTime when you reenter the app
 
+//        for (int i = 0; i < m_Obstacles.size(); i++) {
+//            m_Obstacles.get(i).Move(m_Obstacles.get(i).GetHorizontalSpeed(), m_Obstacles.get(i).GetVerticalSpeed());
+//            if (m_Obstacles.get(i).IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
+//                ResetObstaclePosition();
+////                m_Obstacles.remove(m_Obstacles.get(i));
+//                m_Obstacles.remove(i);
+//                m_Obstacles.add(0, new Obstacle(m_XStart, m_YStart, m_XStart + m_Obstacles.get(i).GetWidth(), m_YStart + m_Obstacles.get(i).GetHeight(), 50, 50, m_Obstacles.get(i).GetColor()));
+//            }
+//            else if (m_Obstacles.get(i).IsCollidingWith(m_Player)) {
+//                m_IsCollidingWithPlayer = true;
+//            }
+//        }
+
         for (Obstacle obstacle : m_Obstacles) {
             // Moves each obstacle down the screen
-            obstacle.Move(0.0f, obstacle.GetSpeed());
+            obstacle.Move(obstacle.GetHorizontalSpeed(), obstacle.GetVerticalSpeed());
             if (obstacle.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
-                m_XStart = (int)(Math.random() * Constants.ScreenWidth);
-                m_YStart = 50;
-//                obstacle.GetCollider().setEmpty();
+                ResetObstaclePosition();
                 m_Obstacles.remove(obstacle);
                 m_Obstacles.add(0, new Obstacle(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight(), 50, 50, obstacle.GetColor()));
             }
-            if (obstacle.IsCollidingWith(m_Player)) {
+            else if (obstacle.IsCollidingWith(m_Player)) {
                 m_IsCollidingWithPlayer = true;
             }
         }
@@ -136,9 +192,6 @@ public class ObstacleManager {
         for (Obstacle obstacle : m_Obstacles) {
             obstacle.Draw(canvas);
         }
-        Paint paint = new Paint();
-        paint.setTextSize(Constants.GAME_OVER_TEXT_SIZE);
-        paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
-        canvas.drawText("" + m_Score, 50, 50 + paint.descent() - paint.ascent(), paint);
+        canvas.drawText("" + m_Score, 50, 50 + m_Paint.descent() - m_Paint.ascent(), m_Paint);
     }
 }

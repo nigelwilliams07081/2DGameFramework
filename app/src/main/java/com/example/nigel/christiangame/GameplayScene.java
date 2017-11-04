@@ -194,7 +194,6 @@ public class GameplayScene implements Scene {
 
         if (Math.abs(m_Player.GetXSpeed() * m_ElapsedTime) > 5.0) {
             m_Player.SetXPosition(m_Player.GetPosition().x + (int)(m_Player.GetXSpeed() * m_ElapsedTime));
-            m_Player.RotatePlayer((int)m_Player.GetRotation());
         }
         else {
             m_Player.SetXPosition(m_Player.GetPosition().x);

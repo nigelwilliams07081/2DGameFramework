@@ -22,7 +22,6 @@ public class Player implements GameObject {
     private float m_XSpeed;
     private float m_YSpeed;
     private float m_RotationSpeed = 1.0f;
-    private float[] m_RotationArray;
 
     public final float BOOST_AMOUNT = 2.0f;
     public final float INITIAL_BOOST_TIME = 5.0f;
@@ -31,8 +30,6 @@ public class Player implements GameObject {
     private boolean m_IsBoosting;
 
     private Animation m_IdleAnimation;
-    // private Animation m_WalkRightAnimation;
-    // private Animation m_WalkLeftAnimation;
     private Bitmap m_Image;
     private Matrix m_Matrix;
     private int m_AnimationState;
@@ -45,21 +42,10 @@ public class Player implements GameObject {
         BitmapFactory bitmapFactory = new BitmapFactory();
         m_Image = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.ship);
         m_Matrix = new Matrix();
-        m_RotationArray = new float[4];
         // Bitmap walk1 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk1);
         // Bitmap walk2 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk2);
 
         m_IdleAnimation = new Animation(new Bitmap[]{ m_Image }, 2);
-        // m_WalkRightAnimation = new Animation(new Bitmap[]{ walk1, walk2 }, 0.5f);
-
-        // flip walkright to be walkleft
-        // Matrix matrix = new Matrix();
-
-        // matrix.preScale(-1, 1);
-        // walk1 = Bitmap.createBitmap(walk1, 0, 0, walk1.getWidth(), walk1.getHeight(), matrix, false);
-        // walk2 = Bitmap.createBitmap(walk2, 0, 0, walk2.getWidth(), walk2.getHeight(), matrix, false);
-
-        // m_WalkLeftAnimation = new Animation(new Bitmap[]{ walk1, walk2 }, 0.5f);
 
         m_AnimationManager = new AnimationManager(new Animation[]{ m_IdleAnimation });
     }
@@ -116,7 +102,6 @@ public class Player implements GameObject {
     public void SetPosition(int xPosition, int yPosition) {
         m_Position.x = xPosition;
         m_Position.y = yPosition;
-
     }
 
     /**
@@ -171,13 +156,6 @@ public class Player implements GameObject {
      */
     public void SetIsBoosting(boolean isBoosting) {
         m_IsBoosting = isBoosting;
-    }
-
-    public void RotatePlayer(int angle) {
-        final RectF rotatedCollider = new RectF(m_Collider);
-        m_Matrix.setRotate(angle, m_Collider.exactCenterX(), m_Collider.exactCenterY());
-//        m_Matrix.mapRect(rotatedCollider);
-        m_AnimationManager.GetAnimations()[m_AnimationManager.GetAnimationIndex()].SetMatrix(m_Matrix);
     }
 
     @Override
