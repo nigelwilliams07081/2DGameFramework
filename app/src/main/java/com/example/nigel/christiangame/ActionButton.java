@@ -1,6 +1,7 @@
 package com.example.nigel.christiangame;
 
 import android.graphics.Color;
+import android.telecom.Connection;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ public class ActionButton {
     private int m_DefaultColor;
     private boolean m_IsBoostButton;
     private Player m_TargetPlayer;
+    private EButtonType m_ButtonType;
 
     /**
      * Creates an ActionButton used for different events such as shooting, boosting, or teleporting
@@ -25,7 +27,8 @@ public class ActionButton {
      * @param xPosition The X-Position of the Button
      * @param yPosition The Y-Position of the Button
      */
-    public ActionButton(Button button, int background, int textColor, String text, float xPosition, float yPosition) {
+    public ActionButton(EButtonType type, Button button, int background, int textColor, String text, float xPosition, float yPosition) {
+        m_ButtonType = type;
         m_Button = button;
         m_DefaultColor = background;
         m_Button.setBackgroundColor(background);
@@ -52,10 +55,6 @@ public class ActionButton {
         m_TargetPlayer = player;
     }
 
-    public void SetIsBoost(boolean isBoost) {
-        m_IsBoostButton = isBoost;
-    }
-
     public void Enable() {
         m_Button.setEnabled(true);
 //        m_Button.setBackgroundColor(m_DefaultColor);
@@ -74,15 +73,15 @@ public class ActionButton {
         @Override
         public void onClick(View v) {
             // Will be changed to have a cool-down
-            if (m_Button.isEnabled()) {
-                m_TargetPlayer.SetIsBoosting(true);
-                Disable();
-            }
-            else {
-                Toast.makeText(Constants.CurrentContext, "Cooling down", Toast.LENGTH_SHORT).show();
-            }
+            if (m_ButtonType == EButtonType.BOOST) {
 
+            }
+            else if (m_ButtonType == EButtonType.TELEPORT) {
+                m_TargetPlayer.SetPosition((int)(Math.random() * Constants.ScreenWidth), (int)(Math.random() * Constants.ScreenHeight));
+            }
+            else if (m_ButtonType == EButtonType.FIRE) {
 
+            }
         }
     }
 }

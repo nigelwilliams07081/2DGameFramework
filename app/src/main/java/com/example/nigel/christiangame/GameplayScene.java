@@ -1,5 +1,7 @@
 package com.example.nigel.christiangame;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -18,6 +20,7 @@ public class GameplayScene implements Scene {
 
     private Player m_Player;
     private ObstacleManager m_ObstacleManager;
+    private LaserManager m_LaserManager;
 
     private ActionButton m_BoostButton;
     private ActionButton m_TeleportButton;
@@ -34,6 +37,10 @@ public class GameplayScene implements Scene {
     private float m_Pitch;
     private float m_Roll;
 
+    private Paint m_Paint;
+
+    private SharedPreferences m_FileManager;
+
 
     public GameplayScene() {
 
@@ -41,19 +48,35 @@ public class GameplayScene implements Scene {
         Point position = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
         m_Player.SetPosition(position);
         m_Player.Update(m_Player.GetPosition());
-        m_ObstacleManager = new ObstacleManager(50, 50, Color.WHITE);
+        m_ObstacleManager = new ObstacleManager();
         m_ObstacleManager.SetTarget(m_Player);
+
+        m_LaserManager = new LaserManager();
+        m_LaserManager.SetPlayer(m_Player);
+
+        // These two are for checking when the lasers and obstacles collide
+        m_ObstacleManager.SetLaserManager(m_LaserManager);
+        m_LaserManager.SetObstacleManager(m_ObstacleManager);
+
         InitializeOrientationData();
 
-        PlaceButton(m_BoostButton, Color.rgb(22, 200, 22), Color.WHITE, "Boost", Constants.ScreenWidth / 4,
-                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, true);
-        PlaceButton(m_TeleportButton, Color.rgb(22, 22, 200), Color.WHITE, "Teleport", 2 * Constants.ScreenWidth / 4,
-                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, false);
-        PlaceButton(m_FireButton, Color.rgb(200, 22, 22), Color.WHITE, "Fire", 3 * Constants.ScreenWidth / 4,
-                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING, false);
+        PlaceButton(EButtonType.BOOST, m_BoostButton, Color.rgb(22, 200, 22), Color.WHITE, "Boost", Constants.ScreenWidth / 4,
+                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
+        PlaceButton(EButtonType.TELEPORT, m_TeleportButton, Color.rgb(22, 22, 200), Color.WHITE, "Teleport", 2 * Constants.ScreenWidth / 4,
+                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
+        PlaceButton(EButtonType.FIRE, m_FireButton, Color.rgb(200, 22, 22), Color.WHITE, "Fire", 3 * Constants.ScreenWidth / 4,
+                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
 
         m_FrameTime = System.currentTimeMillis();
+        m_Paint = new Paint();
+        m_Paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
+        m_Paint.setTextSize(Constants.GAME_OVER_TEXT_SIZE);
+        Constants.Score = 0;
+        m_FileManager = Constants.CurrentContext.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
 
+        if (m_FileManager.contains(Constants.HighScoreID)) {
+            Constants.HighScore = m_FileManager.getInt(Constants.HighScoreID, 0);
+        }
     }
 
     private void InitializeOrientationData() {
@@ -62,20 +85,30 @@ public class GameplayScene implements Scene {
     }
 
 
-    private void PlaceButton(ActionButton button, int backgroundColor, int textColor, String text, float x, float y, boolean isBoost) {
-        button = new ActionButton(new Button(Constants.CurrentContext), backgroundColor, textColor, text, x, y);
+    private void PlaceButton(EButtonType type, ActionButton button, int backgroundColor, int textColor, String text, float x, float y) {
+        button = new ActionButton(type, new Button(Constants.CurrentContext), backgroundColor, textColor, text, x, y);
         button.SetTarget(m_Player);
-        button.SetIsBoost(isBoost);
 
         Constants.RelativeLayout.addView(button.GetButton());
     }
 
     public void ResetGame() {
 
+        if (Constants.HighScore < Constants.Score) {
+            Constants.HighScore = Constants.Score;
+        }
+
+        m_FileManager.edit().putInt(Constants.HighScoreID, Constants.HighScore);
         m_Player.SetPosition(new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4));
         m_Player.Update(m_Player.GetPosition());
-        m_ObstacleManager = new ObstacleManager(50, 50, Color.WHITE);
+        m_ObstacleManager = new ObstacleManager();
         m_ObstacleManager.SetTarget(m_Player);
+        m_LaserManager = new LaserManager();
+        m_LaserManager.SetPlayer(m_Player);
+        // These two are for checking when the lasers and obstacles collide
+        m_ObstacleManager.SetLaserManager(m_LaserManager);
+        m_LaserManager.SetObstacleManager(m_ObstacleManager);
+        Constants.Score = 0;
         m_PlayerIsMoving = false;
     }
 
@@ -95,6 +128,7 @@ public class GameplayScene implements Scene {
                     // Reset the orientation data for a new game
                     m_OrientationData.NewGame();
                 }
+                m_LaserManager.SpawnLaser();
                 break;
 
             // if user is moving finger on screen
@@ -127,6 +161,8 @@ public class GameplayScene implements Scene {
 
             m_Player.Update(m_Player.GetPosition());
             m_ObstacleManager.Update();
+            m_LaserManager.SetSpawnPosition(m_Player.GetPosition().x, m_Player.GetPosition().y);
+            m_LaserManager.Update();
 
             // Checks to see if any obstacle in the ObstacleManager is touching the player
             if (m_ObstacleManager.GetIsCollidingWithPlayer()) {
@@ -144,7 +180,9 @@ public class GameplayScene implements Scene {
 
         m_Player.Draw(canvas);
         m_ObstacleManager.Draw(canvas);
-
+        m_LaserManager.Draw(canvas);
+        canvas.drawText(String.valueOf(Constants.Score), 50, 50 + m_Paint.descent() - m_Paint.ascent(), m_Paint);
+        canvas.drawText(String.valueOf(Constants.HighScore), Constants.ScreenWidth - Constants.SCREEN_WIDTH_PADDING, Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
         if (m_IsGameOver) {
             // Will fix later
             Paint paint = new Paint();
@@ -156,7 +194,7 @@ public class GameplayScene implements Scene {
 
     private void MovePlayerByTilting() {
 
-        m_ElapsedTime = (int)(System.currentTimeMillis() - m_FrameTime);
+        Constants.ElapsedTime = (int)(System.currentTimeMillis() - m_FrameTime);
         m_FrameTime = System.currentTimeMillis();
 
         if (m_OrientationData.GetOrientation() != null && m_OrientationData.GetStartOrientation() != null) {
@@ -192,15 +230,15 @@ public class GameplayScene implements Scene {
             m_Player.SetYSpeed(-m_Pitch * Constants.ScreenHeight / 1000.0f);
         }
 
-        if (Math.abs(m_Player.GetXSpeed() * m_ElapsedTime) > 5.0) {
-            m_Player.SetXPosition(m_Player.GetPosition().x + (int)(m_Player.GetXSpeed() * m_ElapsedTime));
+        if (Math.abs(m_Player.GetXSpeed() * Constants.ElapsedTime) > 5.0) {
+            m_Player.SetXPosition(m_Player.GetPosition().x + (int)(m_Player.GetXSpeed() * Constants.ElapsedTime));
         }
         else {
             m_Player.SetXPosition(m_Player.GetPosition().x);
         }
 
-        if (Math.abs(m_Player.GetYSpeed() * m_ElapsedTime) > 5.0) {
-            m_Player.SetYPosition(m_Player.GetPosition().y + (int)(m_Player.GetYSpeed() * m_ElapsedTime));
+        if (Math.abs(m_Player.GetYSpeed() * Constants.ElapsedTime) > 5.0) {
+            m_Player.SetYPosition(m_Player.GetPosition().y + (int)(m_Player.GetYSpeed() * Constants.ElapsedTime));
         }
         else {
             m_Player.SetYPosition(m_Player.GetPosition().y);

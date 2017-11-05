@@ -23,6 +23,8 @@ public class Constants {
      * 120
      */
     public static final int SCREEN_HEIGHT_PADDING = 120;
+    public static final int HIGHSCORE_SCREEN_WIDTH_PADDING = 100;
+    public static final int HIGHSCORE_SCREEN_HEIGHT_PADDING = 50;
     /**
      * BLUE
      */
@@ -34,6 +36,12 @@ public class Constants {
     public static Context CurrentContext;
     public static long InitialTime;
     public static long CurrentGameTime;
+
+    public static float ElapsedTime;
+
+    public static int Score;
+    public static int HighScore;
+    public static final String HighScoreID = "HighScore_ID";
 
     public static final RelativeLayout.LayoutParams LAYOUT_PARAMS_WC = new RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

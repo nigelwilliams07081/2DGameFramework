@@ -3,6 +3,7 @@ package com.example.nigel.christiangame;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -15,10 +16,6 @@ public class ObstacleManager {
 
     private ArrayList<Obstacle> m_Obstacles;
 
-    private int m_ObstacleHeight;
-    private int m_ObstacleWidth;
-    private int m_Color;
-    private long m_StartTime;
     private int m_Score = 0;
 
     private int m_XStart;
@@ -32,18 +29,12 @@ public class ObstacleManager {
     private boolean m_IsAtLeft;
     private boolean m_IsAtRight;
 
-    /**
-     * Holds a list of obstacles of size @obstacleWidth @obstacleHeight and color @color
-     * @param obstacleWidth The width of all obstacles
-     * @param obstacleHeight The height of all obstacles
-     * @param color The color of  all obstacles
-     */
-    public ObstacleManager(int obstacleWidth, int obstacleHeight, int color) {
-        m_ObstacleWidth = obstacleWidth;
-        m_ObstacleHeight = obstacleHeight;
-        m_Color = color;
-        m_StartTime = Constants.CurrentGameTime;
+    private LaserManager m_LaserManager;
 
+    /**
+     * Holds a list of obstacles of size 50, 50, and color Color.WHITE
+     */
+    public ObstacleManager() {
         m_Obstacles = new ArrayList<>();
 
         m_Paint = new Paint();
@@ -52,7 +43,6 @@ public class ObstacleManager {
 
         m_Random = new Random();
         PopulateObstacles();
-
     }
 
     /**
@@ -75,15 +65,19 @@ public class ObstacleManager {
         m_Player = player;
     }
 
+    public void SetLaserManager(LaserManager manager) {
+        m_LaserManager = manager;
+    }
+
     /**
      * Returns true if any Obstacle has collided with the Player
      * @return boolean
      */
     public boolean GetIsCollidingWithPlayer() { return m_IsCollidingWithPlayer; }
 
-    public boolean IsCollidingWith(Player player) {
+    public boolean IsCollidingWith(Rect collider) {
         for (Obstacle obstacle : m_Obstacles) {
-            if (obstacle.IsCollidingWith(player)) {
+            if (obstacle.IsCollidingWith(collider)) {
                 return true;
             }
         }
@@ -104,7 +98,7 @@ public class ObstacleManager {
                 int yStart = 50;
 //                int yStart = 100;
 
-                m_Obstacles.add(0, new Obstacle(xStart, yStart, xStart + m_ObstacleWidth, yStart + m_ObstacleHeight, 50, 50,  m_Color));
+                m_Obstacles.add(0, new Obstacle(xStart, yStart, xStart + 50, yStart + 50, 50, 50, Color.WHITE));
                 m_Obstacles.remove(obstacle);
 
                 m_Score = m_Score + 1;
@@ -116,10 +110,9 @@ public class ObstacleManager {
      * Populates the initial list of obstacles
      */
     private void PopulateObstacles() {
-        System.out.println("Trying to populate obstacles");
         for (int i = 0; i < 7; i++) {
             ResetObstaclePosition();
-            m_Obstacles.add(new Obstacle(m_XStart, m_YStart, m_XStart + 50, m_YStart + 50, 50, 50, m_Color));
+            m_Obstacles.add(new Obstacle(m_XStart, m_YStart, m_XStart + 50, m_YStart + 50, 50, 50, Color.WHITE));
         }
     }
 
@@ -159,31 +152,24 @@ public class ObstacleManager {
     }
 
     public void Update() {
-        // Restarts m_StartTime when you reenter the app
 
-//        for (int i = 0; i < m_Obstacles.size(); i++) {
-//            m_Obstacles.get(i).Move(m_Obstacles.get(i).GetHorizontalSpeed(), m_Obstacles.get(i).GetVerticalSpeed());
-//            if (m_Obstacles.get(i).IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
-//                ResetObstaclePosition();
-////                m_Obstacles.remove(m_Obstacles.get(i));
-//                m_Obstacles.remove(i);
-//                m_Obstacles.add(0, new Obstacle(m_XStart, m_YStart, m_XStart + m_Obstacles.get(i).GetWidth(), m_YStart + m_Obstacles.get(i).GetHeight(), 50, 50, m_Obstacles.get(i).GetColor()));
-//            }
-//            else if (m_Obstacles.get(i).IsCollidingWith(m_Player)) {
-//                m_IsCollidingWithPlayer = true;
-//            }
-//        }
-
+        // Instead of removing and adding the obstacles, we will replace the same obstacle (to avoid much lag)
         for (Obstacle obstacle : m_Obstacles) {
             // Moves each obstacle down the screen
             obstacle.Move(obstacle.GetHorizontalSpeed(), obstacle.GetVerticalSpeed());
             if (obstacle.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
                 ResetObstaclePosition();
-                m_Obstacles.remove(obstacle);
-                m_Obstacles.add(0, new Obstacle(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight(), 50, 50, obstacle.GetColor()));
+                obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
             }
-            else if (obstacle.IsCollidingWith(m_Player)) {
+            else if (obstacle.IsCollidingWith(m_Player.GetCollider())) {
                 m_IsCollidingWithPlayer = true;
+            }
+
+            for (Laser laser : m_LaserManager.GetLasers()) {
+                if (obstacle.IsCollidingWith(laser.GetCollider())) {
+                    ResetObstaclePosition();
+                    obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
+                }
             }
         }
     }
@@ -192,6 +178,5 @@ public class ObstacleManager {
         for (Obstacle obstacle : m_Obstacles) {
             obstacle.Draw(canvas);
         }
-        canvas.drawText("" + m_Score, 50, 50 + m_Paint.descent() - m_Paint.ascent(), m_Paint);
     }
 }

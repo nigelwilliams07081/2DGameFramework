@@ -116,12 +116,12 @@ public class Obstacle implements GameObject {
     public int GetHeight() { return m_Height; }
 
     /**
-     * Returns true if this is touching the Player
-     * @param player The Spaceship
-     * @return boolean
+     * Returns true if this is touching the other collider
+     * @param collider
+     * @return
      */
-    public boolean IsCollidingWith(Player player) {
-        return Rect.intersects(m_Collider, player.GetCollider());
+    public boolean IsCollidingWith(Rect collider) {
+        return Rect.intersects(m_Collider, collider);
     }
 
     /**

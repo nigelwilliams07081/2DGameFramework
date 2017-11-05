@@ -4,9 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 
 /**
  * Created by Nigel on 9/19/2017.
@@ -27,6 +31,7 @@ public class Player implements GameObject {
     public final float INITIAL_BOOST_TIME = 5.0f;
     private float m_BoostTimeLimit;
 
+    private boolean m_IsShooting;
     private boolean m_IsBoosting;
 
     private Animation m_IdleAnimation;
@@ -35,6 +40,8 @@ public class Player implements GameObject {
     private int m_AnimationState;
 
     private AnimationManager m_AnimationManager;
+
+    private LaserManager m_LaserManager;
 
     public Player(Rect collider) {
         m_Collider = collider;
@@ -48,6 +55,9 @@ public class Player implements GameObject {
         m_IdleAnimation = new Animation(new Bitmap[]{ m_Image }, 2);
 
         m_AnimationManager = new AnimationManager(new Animation[]{ m_IdleAnimation });
+
+//        m_LaserManager = new LaserManager();
+//        m_LaserManager.SetPlayer(this);
     }
 
     public Player(Rect collider, int color) {
@@ -158,6 +168,12 @@ public class Player implements GameObject {
         m_IsBoosting = isBoosting;
     }
 
+    public boolean GetIsShooting() { return m_IsShooting; }
+
+    public void SetIsShooting(boolean isShooting) { m_IsShooting = isShooting; }
+
+    public LaserManager GetLaserManager() { return m_LaserManager; }
+
     @Override
     public void Update() {
         m_AnimationManager.Update();
@@ -188,6 +204,9 @@ public class Player implements GameObject {
 
         m_AnimationManager.PlayAnimation(m_AnimationState);
         m_AnimationManager.Update();
+
+//        m_LaserManager.SetSpawnPosition(m_Position.x, m_Position.y - 100);
+//        m_LaserManager.Update();
     }
 
     @Override
