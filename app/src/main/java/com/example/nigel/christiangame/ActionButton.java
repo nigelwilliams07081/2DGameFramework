@@ -74,13 +74,13 @@ public class ActionButton {
         public void onClick(View v) {
             // Will be changed to have a cool-down
             if (m_ButtonType == EButtonType.BOOST) {
-
+                // Deciding on a way to implement BOOST
             }
             else if (m_ButtonType == EButtonType.TELEPORT) {
                 m_TargetPlayer.SetPosition((int)(Math.random() * Constants.ScreenWidth), (int)(Math.random() * Constants.ScreenHeight));
             }
             else if (m_ButtonType == EButtonType.FIRE) {
-
+                // Deciding if we need a button to shoot lasers
             }
         }
     }

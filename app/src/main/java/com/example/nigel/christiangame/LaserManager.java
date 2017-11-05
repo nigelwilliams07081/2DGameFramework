@@ -69,8 +69,10 @@ public class LaserManager {
             }
             for (Obstacle obstacle : m_ObstacleManager.GetObstacles()) {
                 if (laser.IsCollidingWith(obstacle.GetCollider())) {
-                    Constants.Score += 1;
+//                    Constants.Score += 1;
+                    obstacle.SetIsActive(false);
                     m_Lasers.remove(laser);
+                    break;
                 }
             }
         }

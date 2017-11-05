@@ -58,6 +58,8 @@ public class Obstacle implements GameObject {
      */
     public boolean GetIsActive() { return m_IsActive; }
 
+    public void SetIsActive(boolean isActive) { m_IsActive = isActive; }
+
     /**
      * Returns the Collider of the Obstacle
      * @return Rect

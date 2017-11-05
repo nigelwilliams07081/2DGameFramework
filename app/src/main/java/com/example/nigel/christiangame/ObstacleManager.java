@@ -120,18 +120,11 @@ public class ObstacleManager {
      * Resets the position of the Obstacle to be at a very random position
      */
     private void ResetObstaclePosition() {
-        if (m_Random.nextBoolean()) {
-            m_IsAtTop = true;
-            m_IsAtLeft = true;
-            m_IsAtBottom = false;
-            m_IsAtRight = false;
-        }
-        else {
-            m_IsAtTop = false;
-            m_IsAtLeft = false;
-            m_IsAtBottom = true;
-            m_IsAtRight = true;
-        }
+
+        m_IsAtTop = Math.random() > 0.5;
+        m_IsAtBottom = !m_IsAtTop;
+        m_IsAtLeft = Math.random() > 0.5;
+        m_IsAtRight = !m_IsAtLeft;
 
         if (m_IsAtTop) {
             m_XStart = (int)(Math.random() * Constants.ScreenWidth);
@@ -156,20 +149,22 @@ public class ObstacleManager {
         // Instead of removing and adding the obstacles, we will replace the same obstacle (to avoid much lag)
         for (Obstacle obstacle : m_Obstacles) {
             // Moves each obstacle down the screen
-            obstacle.Move(obstacle.GetHorizontalSpeed(), obstacle.GetVerticalSpeed());
-            if (obstacle.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
-                ResetObstaclePosition();
-                obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
-            }
-            else if (obstacle.IsCollidingWith(m_Player.GetCollider())) {
-                m_IsCollidingWithPlayer = true;
-            }
-
-            for (Laser laser : m_LaserManager.GetLasers()) {
-                if (obstacle.IsCollidingWith(laser.GetCollider())) {
+            if (obstacle.GetIsActive()) {
+                obstacle.Move(obstacle.GetHorizontalSpeed(), obstacle.GetVerticalSpeed());
+                if (obstacle.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
                     ResetObstaclePosition();
                     obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
                 }
+                else if (obstacle.IsCollidingWith(m_Player.GetCollider())) {
+                    m_IsCollidingWithPlayer = true;
+                }
+            }
+            else {
+                ResetObstaclePosition();
+                obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
+                obstacle.SetIsActive(true);
+                Constants.Score += 1;
+                break;
             }
         }
     }

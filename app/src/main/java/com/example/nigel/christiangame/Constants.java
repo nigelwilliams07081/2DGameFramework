@@ -23,7 +23,7 @@ public class Constants {
      * 120
      */
     public static final int SCREEN_HEIGHT_PADDING = 120;
-    public static final int HIGHSCORE_SCREEN_WIDTH_PADDING = 100;
+    public static final int HIGHSCORE_SCREEN_WIDTH_PADDING = 150;
     public static final int HIGHSCORE_SCREEN_HEIGHT_PADDING = 50;
     /**
      * BLUE

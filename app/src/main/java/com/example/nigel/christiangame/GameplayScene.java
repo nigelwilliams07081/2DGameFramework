@@ -98,18 +98,25 @@ public class GameplayScene implements Scene {
             Constants.HighScore = Constants.Score;
         }
 
-        m_FileManager.edit().putInt(Constants.HighScoreID, Constants.HighScore);
+        SaveHighScore();
         m_Player.SetPosition(new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4));
         m_Player.Update(m_Player.GetPosition());
         m_ObstacleManager = new ObstacleManager();
         m_ObstacleManager.SetTarget(m_Player);
         m_LaserManager = new LaserManager();
         m_LaserManager.SetPlayer(m_Player);
+
         // These two are for checking when the lasers and obstacles collide
         m_ObstacleManager.SetLaserManager(m_LaserManager);
         m_LaserManager.SetObstacleManager(m_ObstacleManager);
+
         Constants.Score = 0;
         m_PlayerIsMoving = false;
+    }
+
+    private void SaveHighScore() {
+        m_FileManager.edit().putInt(Constants.HighScoreID, Constants.HighScore);
+        m_FileManager.edit().apply();
     }
 
     @Override
@@ -118,9 +125,6 @@ public class GameplayScene implements Scene {
 
             // If the user is holding finger on screen
             case MotionEvent.ACTION_DOWN:
-                if (!m_IsGameOver && m_Player.GetCollider().contains((int)motionEvent.getX(), (int)motionEvent.getY())) {
-                    m_PlayerIsMoving = true;
-                }
                 // If the game is over and it has been 2 seconds or more, make the game restart
                 if (m_IsGameOver && System.currentTimeMillis() - m_GameOverTime >= 2000) {
                     ResetGame();
@@ -128,18 +132,9 @@ public class GameplayScene implements Scene {
                     // Reset the orientation data for a new game
                     m_OrientationData.NewGame();
                 }
-                m_LaserManager.SpawnLaser();
-                break;
-
-            // if user is moving finger on screen
-            case MotionEvent.ACTION_MOVE:
-                if (!m_IsGameOver && m_PlayerIsMoving) {
-                    m_Player.SetPosition((int)motionEvent.getX(), (int)motionEvent.getY());
+                else {
+                    m_LaserManager.SpawnLaser();
                 }
-                break;
-            // if the user's finger is lifted from the screen
-            case MotionEvent.ACTION_UP:
-                m_PlayerIsMoving = false;
                 break;
         }
     }
@@ -176,19 +171,21 @@ public class GameplayScene implements Scene {
 
     @Override
     public void Draw(Canvas canvas) {
-//        canvas.drawColor(Color.BLACK);
-
-        m_Player.Draw(canvas);
-        m_ObstacleManager.Draw(canvas);
-        m_LaserManager.Draw(canvas);
-        canvas.drawText(String.valueOf(Constants.Score), 50, 50 + m_Paint.descent() - m_Paint.ascent(), m_Paint);
-        canvas.drawText(String.valueOf(Constants.HighScore), Constants.ScreenWidth - Constants.SCREEN_WIDTH_PADDING, Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
         if (m_IsGameOver) {
             // Will fix later
             Paint paint = new Paint();
             paint.setTextSize(Constants.GAME_OVER_TEXT_SIZE);
             paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
             DrawCenteredText(canvas, paint, "Game Over");
+        }
+        else {
+            m_Player.Draw(canvas);
+            m_ObstacleManager.Draw(canvas);
+            m_LaserManager.Draw(canvas);
+            canvas.drawText(String.valueOf(Constants.Score), Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
+                    Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
+            canvas.drawText(String.valueOf(Constants.HighScore),Constants.ScreenWidth - Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
+                    Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
         }
     }
 
