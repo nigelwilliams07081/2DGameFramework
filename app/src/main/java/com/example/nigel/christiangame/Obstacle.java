@@ -25,10 +25,20 @@ public class Obstacle implements GameObject {
     private boolean m_IsActive;
     private Paint m_Paint;
 
-    public Obstacle(int left, int top, int right, int bottom, int width, int height, int color) {
-        m_Collider = new Rect(left, top, right, bottom);
-        m_Width = width;
-        m_Height = height;
+    private boolean m_IsLarge; //for reference go to ObstacleManager
+
+    public Obstacle(int left, int top, int right, int bottom, int width, int height, int color, boolean isLarge) {
+        if (isLarge) {
+            // double size
+            // width = right - left
+            // height = bottom - top
+        }
+        else {
+            m_Collider = new Rect(left, top, right, bottom);
+            m_Width = width;
+            m_Height = height;
+        }
+        m_IsLarge = isLarge;
         m_Color = color;
         m_IsActive = true;
         m_Paint = new Paint();
@@ -51,6 +61,12 @@ public class Obstacle implements GameObject {
             m_VerticalSpeed = (float)Math.random() * -OBSTACLE_SPEED - 1.0f;
         }
     }
+
+    /**
+     * Returns true if the asteroid is large
+     * @return boolean
+     */
+    public boolean GetIsLarge() { return m_IsLarge; }
 
     /**
      * Returns whether or not the Obstacle has been destroyed

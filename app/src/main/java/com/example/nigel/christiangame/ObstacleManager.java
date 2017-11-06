@@ -16,8 +16,6 @@ public class ObstacleManager {
 
     private ArrayList<Obstacle> m_Obstacles;
 
-    private int m_Score = 0;
-
     private int m_XStart;
     private int m_YStart;
     private boolean m_IsCollidingWithPlayer;
@@ -51,14 +49,6 @@ public class ObstacleManager {
      */
     public ArrayList<Obstacle> GetObstacles() {
         return m_Obstacles;
-    }
-
-    public int GetScore() {
-        return m_Score;
-    }
-
-    public void SetScore(int score) {
-        m_Score = score;
     }
 
     public void SetTarget(Player player) {
@@ -98,10 +88,8 @@ public class ObstacleManager {
                 int yStart = 50;
 //                int yStart = 100;
 
-                m_Obstacles.add(0, new Obstacle(xStart, yStart, xStart + 50, yStart + 50, 50, 50, Color.WHITE));
+                m_Obstacles.add(0, new Obstacle(xStart, yStart, xStart + 50, yStart + 50, 50, 50, Color.WHITE, false));
                 m_Obstacles.remove(obstacle);
-
-                m_Score = m_Score + 1;
             }
         }
     }
@@ -112,7 +100,7 @@ public class ObstacleManager {
     private void PopulateObstacles() {
         for (int i = 0; i < 7; i++) {
             ResetObstaclePosition();
-            m_Obstacles.add(new Obstacle(m_XStart, m_YStart, m_XStart + 50, m_YStart + 50, 50, 50, Color.WHITE));
+            m_Obstacles.add(new Obstacle(m_XStart, m_YStart, m_XStart + 50, m_YStart + 50, 50, 50, Color.WHITE, false));
         }
     }
 
@@ -166,6 +154,13 @@ public class ObstacleManager {
                 Constants.Score += 1;
                 break;
             }
+//            if (obstacle.IsLarge) {
+//                // remove
+//                for (i = 0; i < 4; i++) {
+//                    // spawn new obstacle at this position
+//                    // make it go in random direction
+//                }
+//            }
         }
     }
 
