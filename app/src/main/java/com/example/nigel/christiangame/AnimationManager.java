@@ -2,6 +2,7 @@ package com.example.nigel.christiangame;
 
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 /**
@@ -47,9 +48,9 @@ public class AnimationManager {
         }
     }
 
-    public void Draw(Canvas canvas, Rect rect) {
+    public void Draw(Canvas canvas, Rect rect, Paint paint) {
         if (m_Animations[m_AnimationIndex].IsPlaying()) {
-            m_Animations[m_AnimationIndex].Draw(canvas, rect);
+            m_Animations[m_AnimationIndex].Draw(canvas, rect, paint);
         }
     }
 

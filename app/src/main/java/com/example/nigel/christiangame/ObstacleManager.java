@@ -88,7 +88,7 @@ public class ObstacleManager {
                 int yStart = 50;
 //                int yStart = 100;
 
-                m_Obstacles.add(0, new Obstacle(xStart, yStart, xStart + 50, yStart + 50, 50, 50, Color.WHITE, false));
+                m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, false));
                 m_Obstacles.remove(obstacle);
             }
         }
@@ -98,10 +98,12 @@ public class ObstacleManager {
      * Populates the initial list of obstacles
      */
     private void PopulateObstacles() {
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 6; i++) {
             ResetObstaclePosition();
-            m_Obstacles.add(new Obstacle(m_XStart, m_YStart, m_XStart + 50, m_YStart + 50, 50, 50, Color.WHITE, false));
+            m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, false));
         }
+        ResetObstaclePosition();
+        m_Obstacles.add(new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, true));
     }
 
     /**
@@ -136,31 +138,30 @@ public class ObstacleManager {
 
         // Instead of removing and adding the obstacles, we will replace the same obstacle (to avoid much lag)
         for (Obstacle obstacle : m_Obstacles) {
+            obstacle.Update();
             // Moves each obstacle down the screen
             if (obstacle.GetIsActive()) {
-                obstacle.Move(obstacle.GetHorizontalSpeed(), obstacle.GetVerticalSpeed());
-                if (obstacle.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
-                    ResetObstaclePosition();
-                    obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
-                }
-                else if (obstacle.IsCollidingWith(m_Player.GetCollider())) {
+                if (obstacle.IsCollidingWith(m_Player.GetCollider())) {
                     m_IsCollidingWithPlayer = true;
                 }
             }
             else {
-                ResetObstaclePosition();
-                obstacle.GetCollider().set(m_XStart, m_YStart, m_XStart + obstacle.GetWidth(), m_YStart + obstacle.GetHeight());
-                obstacle.SetIsActive(true);
-                Constants.Score += 1;
+                if (obstacle.GetIsLarge()) {
+                    int left = obstacle.GetCollider().left;
+                    int top = obstacle.GetCollider().top;
+
+                    m_Obstacles.add(new Obstacle(left, top, left + 50, top + 50, Color.WHITE, false));
+                    m_Obstacles.add(new Obstacle(left, top, left + 50, top + 50, Color.WHITE, false));
+                    m_Obstacles.add(new Obstacle(left, top, left + 50, top + 50, Color.WHITE, false));
+                    m_Obstacles.add(new Obstacle(left, top, left + 50, top + 50, Color.WHITE, false));
+                }
+                m_Obstacles.remove(obstacle);
                 break;
             }
-//            if (obstacle.IsLarge) {
-//                // remove
-//                for (i = 0; i < 4; i++) {
-//                    // spawn new obstacle at this position
-//                    // make it go in random direction
-//                }
-//            }
+        }
+
+        if (System.currentTimeMillis() % 15 == 0) {
+            m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, m_Random.nextBoolean()));
         }
     }
 

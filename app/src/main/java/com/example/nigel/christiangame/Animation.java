@@ -63,12 +63,12 @@ public class Animation {
         }
     }
 
-    public void Draw(Canvas canvas, Rect destination) {
+    public void Draw(Canvas canvas, Rect destination, Paint paint) {
         if (!m_IsPlaying)
             return;
 
 //        ScaleRectangle(destination);
-        canvas.drawBitmap(m_Images[m_ImageIndex], null, destination, new Paint());
+        canvas.drawBitmap(m_Images[m_ImageIndex], null, destination, paint);
 //        canvas.drawBitmap(m_Images[m_ImageIndex], m_Matrix, new Paint());
     }
 

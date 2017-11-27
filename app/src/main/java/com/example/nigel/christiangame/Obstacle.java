@@ -13,7 +13,8 @@ import android.webkit.ConsoleMessage;
 
 public class Obstacle implements GameObject {
 
-    private final float OBSTACLE_SPEED = 10.0f;
+    private final float OBSTACLE_SPEED = 5.0f;
+    private final float LARGE_OBSTACLE_SPEED = 3.0f;
 
     private Rect m_Collider;
     private int m_Color;
@@ -22,43 +23,71 @@ public class Obstacle implements GameObject {
     private int m_Width;
     private int m_Height;
 
+    private boolean m_IsAtTop;
+    private boolean m_IsAtBottom;
+    private boolean m_IsAtLeft;
+    private boolean m_IsAtRight;
+
     private boolean m_IsActive;
     private Paint m_Paint;
 
     private boolean m_IsLarge; //for reference go to ObstacleManager
 
-    public Obstacle(int left, int top, int right, int bottom, int width, int height, int color, boolean isLarge) {
-        if (isLarge) {
-            // double size
-            // width = right - left
-            // height = bottom - top
+    public Obstacle(int width, int height, int color, boolean isLarge) {
+        m_IsLarge = isLarge;
+        if (m_IsLarge) {
+            m_Width = width * 2;
+            m_Height = height * 2;
+            m_Collider = new Rect(0, 0, m_Width, m_Height);
         }
         else {
-            m_Collider = new Rect(left, top, right, bottom);
             m_Width = width;
             m_Height = height;
+            m_Collider = new Rect(0, 0, m_Width, m_Height);
         }
-        m_IsLarge = isLarge;
+        ResetObstaclePosition();
         m_Color = color;
         m_IsActive = true;
         m_Paint = new Paint();
         m_Paint.setColor(m_Color);
-        SetSpeed(left, top);
+        SetSpeed(m_Collider.left, m_Collider.top, m_IsLarge);
+
     }
 
-    private void SetSpeed(int left, int top) {
-        if ((float)left < Constants.ScreenWidth / 2.0f) {
-            m_HorizontalSpeed = (float)Math.random() * OBSTACLE_SPEED + 1.0f;
+    public Obstacle(int left, int top, int right, int bottom, int color, boolean isLarge) {
+        m_IsLarge = isLarge;
+        if (m_IsLarge) {
+            m_Width = (right - left) * 2;
+            m_Height = (bottom - top) * 2;
+            m_Collider = new Rect(left, top, left + m_Width, bottom + m_Height);
         }
         else {
-            m_HorizontalSpeed = (float)Math.random() * -OBSTACLE_SPEED - 1.0f;
+            m_Collider = new Rect(left, top, right, bottom);
+            m_Width = right - left;
+            m_Height = bottom - top;
+        }
+        m_Color = color;
+        m_IsActive = true;
+        m_Paint = new Paint();
+        m_Paint.setColor(m_Color);
+        SetSpeed(left, top, m_IsLarge);
+    }
+
+    private void SetSpeed(int left, int top, boolean isLarge) {
+        float speed = isLarge ? LARGE_OBSTACLE_SPEED : OBSTACLE_SPEED;
+
+        if ((float)left < Constants.ScreenWidth / 2.0f) {
+            m_HorizontalSpeed = (float)Math.random() * speed + 1.0f;
+        }
+        else {
+            m_HorizontalSpeed = (float)Math.random() * -speed - 1.0f;
         }
 
         if ((float)top < Constants.ScreenHeight / 2.0f) {
-            m_VerticalSpeed = (float)Math.random() * OBSTACLE_SPEED + 1.0f;
+            m_VerticalSpeed = (float)Math.random() * speed + 1.0f;
         }
         else {
-            m_VerticalSpeed = (float)Math.random() * -OBSTACLE_SPEED - 1.0f;
+            m_VerticalSpeed = (float)Math.random() * -speed - 1.0f;
         }
     }
 
@@ -87,7 +116,7 @@ public class Obstacle implements GameObject {
     /**
      * Sets the Obstacle's Collider to be null
      */
-    private void DestroyCollider() {
+    public void DestroyCollider() {
         m_Collider = null;
     }
 
@@ -166,13 +195,51 @@ public class Obstacle implements GameObject {
         m_Collider.bottom += yAmount;
     }
 
+    private void ResetObstaclePosition() {
+
+        m_IsAtTop = Math.random() > 0.5;
+        m_IsAtBottom = !m_IsAtTop;
+        m_IsAtLeft = Math.random() > 0.5;
+        m_IsAtRight = !m_IsAtLeft;
+
+        if (m_IsAtTop) {
+            m_Collider.right = (int)(Math.random() * Constants.ScreenWidth);
+            m_Collider.left = m_Collider.right - m_Width;
+            m_Collider.bottom = 0;
+            m_Collider.top = m_Collider.bottom - m_Height;
+        }
+        else if (m_IsAtBottom) {
+            m_Collider.right = (int)(Math.random() * Constants.ScreenWidth);
+            m_Collider.left = m_Collider.right - m_Width;
+            m_Collider.top = Constants.ScreenHeight;
+            m_Collider.bottom = m_Collider.top + m_Height;
+        }
+        if (m_IsAtLeft) {
+            m_Collider.right = 0;
+            m_Collider.left = m_Collider.right - m_Width;
+            m_Collider.top = (int)(Math.random() * Constants.ScreenHeight);
+            m_Collider.bottom = m_Collider.top + m_Height;
+        }
+        else if (m_IsAtRight) {
+            m_Collider.left = Constants.ScreenWidth;
+            m_Collider.right = m_Collider.left + m_Width;
+            m_Collider.top = (int)(Math.random() * Constants.ScreenHeight);
+            m_Collider.bottom = m_Collider.top + m_Height;
+        }
+    }
+
     @Override
     public void Update() {
-
+        Move(m_HorizontalSpeed, m_VerticalSpeed);
+        if (IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
+            m_IsActive = false;
+        }
     }
 
     @Override
     public void Draw(Canvas canvas) {
-        canvas.drawRect(m_Collider, m_Paint);
+        if (m_IsActive) {
+            canvas.drawRect(m_Collider, m_Paint);
+        }
     }
 }

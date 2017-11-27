@@ -21,6 +21,7 @@ public class Player implements GameObject {
     private Rect m_Collider;
     private Point m_Position;
     private int m_Color;
+    private Paint m_Paint;
     private int m_OldLeftValue;
 
     private float m_XSpeed;
@@ -49,33 +50,12 @@ public class Player implements GameObject {
         BitmapFactory bitmapFactory = new BitmapFactory();
         m_Image = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.ship);
         m_Matrix = new Matrix();
-        // Bitmap walk1 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk1);
-        // Bitmap walk2 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk2);
 
         m_IdleAnimation = new Animation(new Bitmap[]{ m_Image }, 2);
 
         m_AnimationManager = new AnimationManager(new Animation[]{ m_IdleAnimation });
 
-//        m_LaserManager = new LaserManager();
-//        m_LaserManager.SetPlayer(this);
-    }
-
-    public Player(Rect collider, int color) {
-        m_Collider = collider;
-        m_Color = color;
-
-        BitmapFactory bitmapFactory = new BitmapFactory();
-        m_Image = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.ship);
-        // Bitmap walk1 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk1);
-        // Bitmap walk2 = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.alien_blue_walk2);
-
-        // m_IdleAnimation = new Animation(new Bitmap[]{ idle }, 2);
-       //  m_WalkRightAnimation = new Animation(new Bitmap[]{ walk1, walk2 }, 0.5f);
-
-        // m_WalkLeftAnimation = new Animation(new Bitmap[]{ walk1, walk2 }, 0.5f);
-
-        // m_AnimationManager = new AnimationManager(new Animation[]{ m_IdleAnimation });
-
+        m_Paint = new Paint();
     }
 
     /**
@@ -185,12 +165,6 @@ public class Player implements GameObject {
         m_Collider.set(point.x - m_Collider.width() / 2, point.y - m_Collider.height() / 2, point.x + m_Collider.width() / 2, point.y + m_Collider.height() / 2);
 
         m_AnimationState = 0;
-//        if (m_Collider.left - m_OldLeftValue < -5) {
-//            m_AnimationState = 1;
-//        }
-//        else if (m_Collider.left - m_OldLeftValue > 5) {
-//            m_AnimationState = 2;
-//        }
 
         if (m_IsBoosting) {
             if (m_BoostTimeLimit > 0.0f) {
@@ -211,9 +185,6 @@ public class Player implements GameObject {
 
     @Override
     public void Draw(Canvas canvas) {
-//         Paint paint = new Paint();
-//         paint.setColor(m_Color);
-//         canvas.drawRect(m_Rectangle, paint);
-        m_AnimationManager.Draw(canvas, m_Collider);
+        m_AnimationManager.Draw(canvas, m_Collider, m_Paint);
     }
 }

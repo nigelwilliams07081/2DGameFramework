@@ -30,6 +30,7 @@ public class Laser implements GameObject {
         m_Width = Math.abs(m_Collider.right - m_Collider.left);
         m_Height = Math.abs(m_Collider.bottom - m_Collider.top);
         SetSpeed();
+        m_IsActive = true;
     }
 
     public Rect GetCollider() { return m_Collider; }
@@ -63,7 +64,10 @@ public class Laser implements GameObject {
 
     @Override
     public void Update() {
-
+        Move(0.0f, -m_Speed);
+        if (IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
+            m_IsActive = false;
+        }
     }
 
     @Override

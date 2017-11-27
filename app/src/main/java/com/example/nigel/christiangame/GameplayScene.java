@@ -22,9 +22,7 @@ public class GameplayScene implements Scene {
     private ObstacleManager m_ObstacleManager;
     private LaserManager m_LaserManager;
 
-    private ActionButton m_BoostButton;
     private ActionButton m_TeleportButton;
-    private ActionButton m_FireButton;
 
     private boolean m_PlayerIsMoving = false;
     private boolean m_IsGameOver = false;
@@ -60,11 +58,7 @@ public class GameplayScene implements Scene {
 
         InitializeOrientationData();
 
-        PlaceButton(EButtonType.BOOST, m_BoostButton, Color.rgb(22, 200, 22), Color.WHITE, "Boost", Constants.ScreenWidth / 4,
-                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
         PlaceButton(EButtonType.TELEPORT, m_TeleportButton, Color.rgb(22, 22, 200), Color.WHITE, "Teleport", 2 * Constants.ScreenWidth / 4,
-                Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
-        PlaceButton(EButtonType.FIRE, m_FireButton, Color.rgb(200, 22, 22), Color.WHITE, "Fire", 3 * Constants.ScreenWidth / 4,
                 Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
 
         m_FrameTime = System.currentTimeMillis();
@@ -98,8 +92,7 @@ public class GameplayScene implements Scene {
             Constants.HighScore = Constants.Score;
         }
 
-        SaveHighScore();
-        m_Player.SetPosition(new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4));
+        m_Player.SetPosition(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
         m_Player.Update(m_Player.GetPosition());
         m_ObstacleManager = new ObstacleManager();
         m_ObstacleManager.SetTarget(m_Player);
@@ -161,6 +154,7 @@ public class GameplayScene implements Scene {
 
             // Checks to see if any obstacle in the ObstacleManager is touching the player
             if (m_ObstacleManager.GetIsCollidingWithPlayer()) {
+                SaveHighScore();
                 m_IsGameOver = true;
                 m_GameOverTime = Constants.CurrentGameTime;
 
@@ -178,15 +172,13 @@ public class GameplayScene implements Scene {
             paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
             DrawCenteredText(canvas, paint, "Game Over");
         }
-        else {
-            m_Player.Draw(canvas);
-            m_ObstacleManager.Draw(canvas);
-            m_LaserManager.Draw(canvas);
-            canvas.drawText(String.valueOf(Constants.Score), Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
-                    Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
-            canvas.drawText(String.valueOf(Constants.HighScore),Constants.ScreenWidth - Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
-                    Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
-        }
+        m_Player.Draw(canvas);
+        m_ObstacleManager.Draw(canvas);
+        m_LaserManager.Draw(canvas);
+        canvas.drawText(String.valueOf(Constants.Score), Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
+                Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
+        canvas.drawText(String.valueOf(Constants.HighScore),Constants.ScreenWidth - Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
+                Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
     }
 
     private void MovePlayerByTilting() {

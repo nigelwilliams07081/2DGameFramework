@@ -52,4 +52,6 @@ public class Constants {
             Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
     public static RelativeLayout RelativeLayout;
 
+    public static final int ASTEROID_WIDTH = 50;
+    public static final int ASTEROID_HEIGHT = 50;
 }

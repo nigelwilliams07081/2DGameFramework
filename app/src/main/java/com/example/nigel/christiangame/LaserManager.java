@@ -63,13 +63,14 @@ public class LaserManager {
 
     public void Update() {
         for (Laser laser : m_Lasers) {
-            laser.Move(0.0f, -laser.GetSpeed());
-            if (laser.IsOutOfBounds(-100, Constants.ScreenWidth + 100, -100, Constants.ScreenHeight + 100)) {
+            laser.Update();
+            if (!laser.GetIsActive()) {
                 m_Lasers.remove(laser);
+                break;
             }
             for (Obstacle obstacle : m_ObstacleManager.GetObstacles()) {
                 if (laser.IsCollidingWith(obstacle.GetCollider())) {
-//                    Constants.Score += 1;
+                    Constants.Score += 1;
                     obstacle.SetIsActive(false);
                     m_Lasers.remove(laser);
                     break;
