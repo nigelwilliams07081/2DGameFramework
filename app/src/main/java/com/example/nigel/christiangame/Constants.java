@@ -2,11 +2,15 @@ package com.example.nigel.christiangame;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+
+import java.util.ArrayList;
 
 /**
  * Created by Nigel on 9/22/2017.
@@ -54,4 +58,7 @@ public class Constants {
 
     public static final int ASTEROID_WIDTH = 50;
     public static final int ASTEROID_HEIGHT = 50;
+
+    public static ArrayList<Bitmap> AsteroidImages = new ArrayList<>();
+    public static Bitmap BackgroundImage;
 }

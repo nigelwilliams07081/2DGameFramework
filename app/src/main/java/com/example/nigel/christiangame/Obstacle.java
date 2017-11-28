@@ -1,11 +1,15 @@
 package com.example.nigel.christiangame;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
+
+import java.util.Random;
 
 /**
  * Created by Nigel on 9/22/2017.
@@ -17,7 +21,8 @@ public class Obstacle implements GameObject {
     private final float LARGE_OBSTACLE_SPEED = 3.0f;
 
     private Rect m_Collider;
-    private int m_Color;
+    private Bitmap[] m_Images;
+    private Bitmap m_Image;
     private float m_HorizontalSpeed;
     private float m_VerticalSpeed;
     private int m_Width;
@@ -33,7 +38,9 @@ public class Obstacle implements GameObject {
 
     private boolean m_IsLarge; //for reference go to ObstacleManager
 
-    public Obstacle(int width, int height, int color, boolean isLarge) {
+    public Obstacle(int width, int height, boolean isLarge) {
+        m_Image = Constants.AsteroidImages.get((int)(Math.random() * 10.0) % 4);
+
         m_IsLarge = isLarge;
         if (m_IsLarge) {
             m_Width = width * 2;
@@ -46,15 +53,15 @@ public class Obstacle implements GameObject {
             m_Collider = new Rect(0, 0, m_Width, m_Height);
         }
         ResetObstaclePosition();
-        m_Color = color;
         m_IsActive = true;
         m_Paint = new Paint();
-        m_Paint.setColor(m_Color);
         SetSpeed(m_Collider.left, m_Collider.top, m_IsLarge);
 
     }
 
     public Obstacle(int left, int top, int right, int bottom, int color, boolean isLarge) {
+        m_Image = Constants.AsteroidImages.get((int)(Math.random() * 10.0) % 4);
+
         m_IsLarge = isLarge;
         if (m_IsLarge) {
             m_Width = (right - left) * 2;
@@ -66,10 +73,8 @@ public class Obstacle implements GameObject {
             m_Width = right - left;
             m_Height = bottom - top;
         }
-        m_Color = color;
         m_IsActive = true;
         m_Paint = new Paint();
-        m_Paint.setColor(m_Color);
         SetSpeed(left, top, m_IsLarge);
     }
 
@@ -119,12 +124,6 @@ public class Obstacle implements GameObject {
     public void DestroyCollider() {
         m_Collider = null;
     }
-
-    /**
-     * Returns the Color of the Collider
-     * @return int
-     */
-    public int GetColor() { return m_Color; }
 
     /**
      * Returns the Obstacle's Horizontal Speed
@@ -239,7 +238,7 @@ public class Obstacle implements GameObject {
     @Override
     public void Draw(Canvas canvas) {
         if (m_IsActive) {
-            canvas.drawRect(m_Collider, m_Paint);
+            canvas.drawBitmap(m_Image, null, m_Collider, m_Paint);
         }
     }
 }

@@ -63,17 +63,18 @@ public class LaserManager {
 
     public void Update() {
         for (Laser laser : m_Lasers) {
-            laser.Update();
             if (!laser.GetIsActive()) {
                 m_Lasers.remove(laser);
-                break;
             }
-            for (Obstacle obstacle : m_ObstacleManager.GetObstacles()) {
-                if (laser.IsCollidingWith(obstacle.GetCollider())) {
-                    Constants.Score += 1;
-                    obstacle.SetIsActive(false);
-                    m_Lasers.remove(laser);
-                    break;
+            else {
+                laser.Update();
+                for (Obstacle obstacle : m_ObstacleManager.GetObstacles()) {
+                    if (laser.IsCollidingWith(obstacle.GetCollider())) {
+                        Constants.Score += 1;
+                        obstacle.SetIsActive(false);
+                        m_Lasers.remove(laser);
+                        break;
+                    }
                 }
             }
         }

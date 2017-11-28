@@ -3,6 +3,7 @@ package com.example.nigel.christiangame;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.text.Layout;
 import android.util.DisplayMetrics;

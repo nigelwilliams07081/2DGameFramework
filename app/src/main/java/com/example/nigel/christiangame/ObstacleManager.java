@@ -88,7 +88,7 @@ public class ObstacleManager {
                 int yStart = 50;
 //                int yStart = 100;
 
-                m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, false));
+                m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, false));
                 m_Obstacles.remove(obstacle);
             }
         }
@@ -100,10 +100,10 @@ public class ObstacleManager {
     private void PopulateObstacles() {
         for (int i = 0; i < 6; i++) {
             ResetObstaclePosition();
-            m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, false));
+            m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, false));
         }
         ResetObstaclePosition();
-        m_Obstacles.add(new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, true));
+        m_Obstacles.add(new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, true));
     }
 
     /**
@@ -161,7 +161,7 @@ public class ObstacleManager {
         }
 
         if (System.currentTimeMillis() % 15 == 0) {
-            m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, Color.WHITE, m_Random.nextBoolean()));
+            m_Obstacles.add(0, new Obstacle(Constants.ASTEROID_WIDTH, Constants.ASTEROID_HEIGHT, m_Random.nextBoolean()));
         }
     }
 

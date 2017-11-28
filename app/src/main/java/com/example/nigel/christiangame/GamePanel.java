@@ -1,8 +1,10 @@
 package com.example.nigel.christiangame;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -18,12 +20,24 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     private SceneManager m_SceneManager;
 
+    private Paint m_Paint;
+
     public GamePanel(Context context) {
         super(context);
 
         getHolder().addCallback(this);
 
         Constants.CurrentContext = context;
+
+
+        Constants.AsteroidImages.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.asteroid_png_clipart));
+        Constants.AsteroidImages.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.asteroid_png2_clipart));
+        Constants.AsteroidImages.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.asteroid_png3_clipart));
+        Constants.AsteroidImages.add(BitmapFactory.decodeResource(context.getResources(), R.drawable.asteroid_png4_clipart));
+
+        Constants.BackgroundImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.space_background);
+
+        m_Paint = new Paint();
 
         m_Thread = new MainThread(getHolder(), this);
 
@@ -75,6 +89,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
+        canvas.drawBitmap(Constants.BackgroundImage, null, canvas.getClipBounds(), m_Paint);
         m_SceneManager.Draw(canvas);
     }
 }
