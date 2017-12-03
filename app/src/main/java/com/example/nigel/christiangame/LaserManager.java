@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 
 import java.util.ArrayList;
 
@@ -29,6 +30,9 @@ public class LaserManager {
         m_Lasers = new ArrayList<>();
         m_LaserWidth = 5;
         m_LaserHeight = 20;
+
+        Constants.AsteroidExplosionSound = MediaPlayer.create(Constants.CurrentContext, R.raw.explosion);
+        Constants.LaserSound = MediaPlayer.create(Constants.CurrentContext, R.raw.laser2);
     }
 
     public ArrayList<Laser> GetLasers() { return m_Lasers; }
@@ -44,6 +48,8 @@ public class LaserManager {
 
     public void SpawnLaser() {
         m_Lasers.add(0, new Laser(m_XStart, m_YStart, m_XStart + 5, m_YStart + 20, Color.GREEN));
+        Constants.LaserSound.seekTo(0);
+        Constants.LaserSound.start();
     }
 
     public boolean GetIsCollidingWithObstacles() { return m_IsCollidingWithObstacle; }
@@ -73,6 +79,8 @@ public class LaserManager {
                         Constants.Score += 1;
                         obstacle.SetIsActive(false);
                         m_Lasers.remove(laser);
+                        Constants.AsteroidExplosionSound.seekTo(0);
+                        Constants.AsteroidExplosionSound.start();
                         break;
                     }
                 }

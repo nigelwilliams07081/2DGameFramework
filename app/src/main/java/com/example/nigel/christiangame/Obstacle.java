@@ -194,7 +194,7 @@ public class Obstacle implements GameObject {
         m_Collider.bottom += yAmount;
     }
 
-    private void ResetObstaclePosition() {
+    public void ResetObstaclePosition() {
 
         m_IsAtTop = Math.random() > 0.5;
         m_IsAtBottom = !m_IsAtTop;

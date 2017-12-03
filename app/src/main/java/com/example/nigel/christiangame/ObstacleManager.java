@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -132,6 +133,13 @@ public class ObstacleManager {
             m_XStart = Constants.ScreenWidth;
             m_YStart = (int)(Math.random() * Constants.ScreenHeight);
         }
+    }
+
+    public void Reset() {
+        for (Obstacle obstacle : m_Obstacles) {
+            obstacle.ResetObstaclePosition();
+        }
+        m_IsCollidingWithPlayer = false;
     }
 
     public void Update() {

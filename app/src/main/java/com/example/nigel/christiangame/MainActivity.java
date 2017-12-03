@@ -27,7 +27,12 @@ public class MainActivity extends Activity {
     }
 
     public void startGame(View view) {
-        Intent intent = new Intent(this, GameLauncher.class);
-        startActivity(intent);
+        if (Constants.Intent == null) {
+            Constants.Intent = new Intent(this, GameLauncher.class);
+        }
+        else {
+            Constants.Intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        }
+        startActivity(Constants.Intent);
     }
 }

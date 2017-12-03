@@ -44,8 +44,14 @@ public class Player implements GameObject {
 
     private LaserManager m_LaserManager;
 
+    private int m_Lives;
+
+    private final float INITIAL_HIT_TIMER = 1.0f;
+    private float m_HitTimer;
+
     public Player(Rect collider) {
         m_Collider = collider;
+        ResetLives();
         m_BoostTimeLimit = INITIAL_BOOST_TIME;
         BitmapFactory bitmapFactory = new BitmapFactory();
         m_Image = bitmapFactory.decodeResource(Constants.CurrentContext.getResources(), R.drawable.ship);
@@ -153,6 +159,18 @@ public class Player implements GameObject {
     public void SetIsShooting(boolean isShooting) { m_IsShooting = isShooting; }
 
     public LaserManager GetLaserManager() { return m_LaserManager; }
+
+    public int GetLives() { return m_Lives; }
+    public void DecreaseLives() { m_Lives -= 1; }
+    public void ResetLives() { m_Lives = 5; }
+
+    public float GetHitTimer() { return m_HitTimer; }
+    public void ReduceHitTimer(float amount) {
+        if (m_HitTimer >= 0.0f) {
+            m_HitTimer -= amount;
+        }
+    }
+    public void ResetHitTimer() { m_HitTimer = INITIAL_HIT_TIMER; }
 
     @Override
     public void Update() {

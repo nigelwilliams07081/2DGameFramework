@@ -7,6 +7,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.media.SoundPool.Builder;
 import android.view.MotionEvent;
 import android.widget.Button;
 
@@ -19,6 +24,8 @@ public class GameplayScene implements Scene {
     private Rect m_SceneBounds = new Rect();
 
     private Player m_Player;
+    private Point m_PlayerStartPosition;
+    private final int STARTING_PLAYER_LIVES = 5;
     private ObstacleManager m_ObstacleManager;
     private LaserManager m_LaserManager;
 
@@ -35,16 +42,20 @@ public class GameplayScene implements Scene {
     private float m_Pitch;
     private float m_Roll;
 
-    private Paint m_Paint;
+    private Paint m_HighScorePaint;
+    private Paint m_HighScoreTextPaint;
+    private Paint m_ScorePaint;
+    private Paint m_ScoreTextPaint;
+    private Paint m_LivesPaint;
+    private Paint m_LivesTextPaint;
 
     private SharedPreferences m_FileManager;
-
 
     public GameplayScene() {
 
         m_Player = new Player(new Rect(100, 100, 200, 200));
-        Point position = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
-        m_Player.SetPosition(position);
+        m_PlayerStartPosition = new Point(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
+        m_Player.SetPosition(m_PlayerStartPosition);
         m_Player.Update(m_Player.GetPosition());
         m_ObstacleManager = new ObstacleManager();
         m_ObstacleManager.SetTarget(m_Player);
@@ -62,15 +73,37 @@ public class GameplayScene implements Scene {
                 Constants.ScreenHeight - Constants.SCREEN_HEIGHT_PADDING);
 
         m_FrameTime = System.currentTimeMillis();
-        m_Paint = new Paint();
-        m_Paint.setColor(Constants.GAME_OVER_TEXT_COLOR);
-        m_Paint.setTextSize(Constants.GAME_OVER_TEXT_SIZE);
+
+        m_HighScorePaint = new Paint();
+        m_HighScorePaint.setColor(Constants.HIGH_SCORE_TEXT_COLOR);
+        m_HighScorePaint.setTextSize(Constants.HIGH_SCORE_TEXT_SIZE);
+        m_HighScoreTextPaint = new Paint();
+        m_HighScoreTextPaint.setColor(Constants.HIGH_SCORE_TEXT_COLOR);
+        m_HighScoreTextPaint.setTextSize(Constants.HIGH_SCORE_LABEL_SIZE);
+
+        m_ScorePaint = new Paint();
+        m_ScorePaint.setColor(Constants.SCORE_TEXT_COLOR);
+        m_ScorePaint.setTextSize(Constants.SCORE_TEXT_SIZE);
+        m_ScoreTextPaint = new Paint();
+        m_ScoreTextPaint.setColor(Constants.SCORE_TEXT_COLOR);
+        m_ScoreTextPaint.setTextSize(Constants.SCORE_LABEL_SIZE);
+
+        m_LivesPaint = new Paint();
+        m_LivesPaint.setColor(Constants.PLAYER_LIVES_TEXT_COLOR);
+        m_LivesPaint.setTextSize(Constants.PLAYER_LIVES_TEXT_SIZE);
+        m_LivesTextPaint = new Paint();
+        m_LivesTextPaint.setColor(Constants.PLAYER_LIVES_TEXT_COLOR);
+        m_LivesTextPaint.setTextSize(Constants.PLAYER_LIVES_LABEL_SIZE);
+
         Constants.Score = 0;
         m_FileManager = Constants.CurrentContext.getSharedPreferences("HighScore", Context.MODE_PRIVATE);
 
         if (m_FileManager.contains(Constants.HighScoreID)) {
             Constants.HighScore = m_FileManager.getInt(Constants.HighScoreID, 0);
         }
+
+        Constants.PlayerExplosionSound = MediaPlayer.create(Constants.CurrentContext, R.raw.player_explosion1);
+
     }
 
     private void InitializeOrientationData() {
@@ -92,7 +125,8 @@ public class GameplayScene implements Scene {
             Constants.HighScore = Constants.Score;
         }
 
-        m_Player.SetPosition(Constants.ScreenWidth / 2, 3 * Constants.ScreenHeight / 4);
+        m_Player.SetPosition(m_PlayerStartPosition);
+        m_Player.ResetLives();
         m_Player.Update(m_Player.GetPosition());
         m_ObstacleManager = new ObstacleManager();
         m_ObstacleManager.SetTarget(m_Player);
@@ -103,13 +137,14 @@ public class GameplayScene implements Scene {
         m_ObstacleManager.SetLaserManager(m_LaserManager);
         m_LaserManager.SetObstacleManager(m_ObstacleManager);
 
+        Constants.BackgroundMusic.start();
         Constants.Score = 0;
         m_PlayerIsMoving = false;
     }
 
     private void SaveHighScore() {
         m_FileManager.edit().putInt(Constants.HighScoreID, Constants.HighScore);
-        m_FileManager.edit().apply();
+        m_FileManager.edit().commit();
     }
 
     @Override
@@ -154,12 +189,26 @@ public class GameplayScene implements Scene {
 
             // Checks to see if any obstacle in the ObstacleManager is touching the player
             if (m_ObstacleManager.GetIsCollidingWithPlayer()) {
-                SaveHighScore();
-                m_IsGameOver = true;
-                m_GameOverTime = Constants.CurrentGameTime;
-
-                // TODO: Reduce the number of player lives and replace the player at a random position
+                m_Player.ReduceHitTimer(0.2f);
             }
+
+            if (m_Player.GetHitTimer() <= 0.0f) {
+
+                m_Player.DecreaseLives();
+                m_Player.SetPosition(m_PlayerStartPosition);
+                m_Player.ResetHitTimer();
+                m_ObstacleManager.Reset();
+                if (m_Player.GetLives() <= 0) {
+                    if (Constants.BackgroundMusic.isPlaying()) {
+                        Constants.ResetBackgroundMusic();
+                    }
+                    Constants.PlayerExplosionSound.start();
+                    SaveHighScore();
+                    m_IsGameOver = true;
+                    m_GameOverTime = Constants.CurrentGameTime;
+                }
+            }
+
         }
     }
 
@@ -175,10 +224,22 @@ public class GameplayScene implements Scene {
         m_Player.Draw(canvas);
         m_ObstacleManager.Draw(canvas);
         m_LaserManager.Draw(canvas);
-        canvas.drawText(String.valueOf(Constants.Score), Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
-                Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
-        canvas.drawText(String.valueOf(Constants.HighScore),Constants.ScreenWidth - Constants.HIGHSCORE_SCREEN_WIDTH_PADDING,
-                Constants.HIGHSCORE_SCREEN_HEIGHT_PADDING + m_Paint.descent() - m_Paint.ascent(), m_Paint);
+
+        canvas.drawText(Constants.SCORE_LABEL, Constants.ScreenWidth - Constants.ScreenWidth / 2,
+                Constants.ScreenHeight / 48 + m_ScoreTextPaint.descent() - m_ScoreTextPaint.ascent(), m_ScoreTextPaint);
+        canvas.drawText(String.valueOf(Constants.Score), Constants.ScreenWidth - Constants.ScreenWidth / 2,
+                Constants.ScreenHeight / 24 + m_ScorePaint.descent() - m_ScorePaint.ascent(), m_ScorePaint);
+
+        canvas.drawText(Constants.HIGH_SCORE_LABEL, Constants.ScreenWidth - Constants.ScreenWidth / 3,
+                Constants.ScreenHeight / 48 + m_HighScoreTextPaint.descent() - m_HighScoreTextPaint.ascent(), m_HighScoreTextPaint);
+        canvas.drawText(String.valueOf(Constants.HighScore),Constants.ScreenWidth - Constants.ScreenWidth / 3,
+                Constants.ScreenHeight / 24 + m_HighScorePaint.descent() - m_HighScorePaint.ascent(), m_HighScorePaint);
+
+        canvas.drawText(Constants.LIVES_LABEL, Constants.ScreenWidth / 6,
+                Constants.ScreenHeight / 48 + m_LivesTextPaint.descent() - m_LivesTextPaint.ascent(), m_LivesTextPaint);
+        canvas.drawText(String.valueOf(m_Player.GetLives()), Constants.ScreenWidth / 6,
+                Constants.ScreenHeight / 24 + m_LivesPaint.descent() - m_LivesPaint.ascent(), m_LivesPaint);
+
     }
 
     private void MovePlayerByTilting() {
@@ -212,7 +273,6 @@ public class GameplayScene implements Scene {
         if (m_Player.GetIsBoosting()) {
             m_Player.SetXSpeed(m_Player.BOOST_AMOUNT * 2 * m_Roll * Constants.ScreenWidth / 1000.0f);
             m_Player.SetYSpeed(m_Player.BOOST_AMOUNT * -m_Pitch * Constants.ScreenHeight / 1000.0f);
-
         }
         else {
             m_Player.SetXSpeed(2 * m_Roll * Constants.ScreenWidth / 1000.0f);
